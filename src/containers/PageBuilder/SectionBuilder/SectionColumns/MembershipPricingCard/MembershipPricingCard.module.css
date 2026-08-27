@@ -1,0 +1,141 @@
+.pricingWrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 0;
+  padding: 0 16px;
+}
+
+.pricingCard {
+  background: white;
+  border: 2px solid #4a3fc7;
+  border-radius: 12px;
+  padding: 40px;
+  max-width: 420px;
+  width: 100%;
+  text-align: center;
+  position: relative;
+}
+
+.popularBadge {
+  position: absolute;
+  top: -15px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #4a3fc7;
+  color: white;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 4px 18px;
+  border-radius: 20px;
+  white-space: nowrap;
+}
+
+.planLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: #534ab7;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+}
+
+.priceRow {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 3px;
+  margin-bottom: 6px;
+  padding: 0;
+}
+
+.priceDollar {
+  font-size: 24px;
+  font-weight: 500;
+  padding-bottom: 8px;
+}
+
+.priceNum {
+  font-size: 64px;
+  font-weight: 500;
+  color: #4a3fc7;
+  line-height: 1;
+}
+
+.pricePer {
+  font-size: 15px;
+  color: #888;
+  padding-bottom: 10px;
+}
+
+.priceSub {
+  font-size: 14px;
+  color: #888;
+  margin-bottom: 28px;
+}
+
+.priceDivider {
+  border: none;
+  border-top: 1px solid #eee;
+  margin: 0 0 24px;
+}
+
+.features {
+  list-style: none;
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 28px;
+  padding: 0;
+}
+
+.featureRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 14px;
+  color: #1a1a1a;
+}
+
+.featureRow svg {
+  width: 18px;
+  height: 18px;
+  stroke: #4a3fc7;
+  fill: none;
+  stroke-width: 2;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.joinBtn {
+  display: block;
+  width: 100%;
+  background: #2e2785;
+  color: white;
+  border: none;
+  padding: 14px;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  margin-bottom: 14px;
+  text-align: center;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+.joinBtn:hover {
+  background: #352d8f;
+  color: white;
+  text-decoration: none;
+}
+
+.valueNote {
+  background: #eeedfe;
+  border-radius: 8px;
+  padding: 14px 18px;
+  font-size: 14px;
+  color: #3c3489;
+  line-height: 1.6;
+}

@@ -5,6 +5,7 @@ import Field, { hasDataInFields } from '../../Field';
 import BlockBuilder from '../../BlockBuilder';
 
 import SectionContainer from '../SectionContainer';
+import MembershipPricingCard from './MembershipPricingCard';
 import css from './SectionColumns.module.css';
 
 // The number of columns (numColumns) affects styling and responsive images
@@ -100,6 +101,7 @@ const SectionColumns = props => {
           <Field data={callToAction} className={defaultClasses.ctaButton} options={fieldOptions} />
         </header>
       ) : null}
+      {sectionId === 'membership' ? <MembershipPricingCard /> : null}
       {hasBlocks ? (
         <div
           className={classNames(defaultClasses.blockContainer, getColumnCSS(numColumns), {
