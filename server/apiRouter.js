@@ -22,6 +22,7 @@ const createUserWithIdp = require('./api/auth/createUserWithIdp');
 const { authenticateFacebook, authenticateFacebookCallback } = require('./api/auth/facebook');
 const { authenticateGoogle, authenticateGoogleCallback } = require('./api/auth/google');
 const stripeRouter = require('./api/stripe');
+const creditsRouter = require('./api/credits');
 
 const router = express.Router();
 
@@ -85,5 +86,8 @@ router.get('/auth/google/callback', authenticateGoogleCallback);
 
 //stripe
 router.use('/stripe', stripeRouter);
+
+// credits
+router.use('/credits', creditsRouter);
 
 module.exports = router;
