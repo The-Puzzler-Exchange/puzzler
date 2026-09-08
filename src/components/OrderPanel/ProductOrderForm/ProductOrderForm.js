@@ -262,7 +262,7 @@ const renderForm = formRenderProps => {
         sectionHeadingAs={sectionHeadingAs}
       />
 
-      {showBreakdown ? (
+      {/* {showBreakdown ? (
         <div className={css.breakdownWrapper}>
           <H6 as={sectionHeadingAs} className={css.bookingBreakdownTitle}>
             <FormattedMessage id="ProductOrderForm.breakdownTitle" />
@@ -276,7 +276,7 @@ const renderForm = formRenderProps => {
             processName={PURCHASE_PROCESS_NAME}
           />
         </div>
-      ) : null}
+      ) : null} */}
 
       <FetchLineItemsError error={fetchLineItemsError} />
 
@@ -290,7 +290,7 @@ const renderForm = formRenderProps => {
         </PrimaryButton>
       </div>
       <p className={css.finePrint}>
-        {payoutDetailsWarning ? (
+        {false ? (
           payoutDetailsWarning
         ) : hasStock && isOwnListing ? (
           <FormattedMessage id="ProductOrderForm.ownListing" />
