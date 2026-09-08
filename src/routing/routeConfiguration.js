@@ -26,6 +26,7 @@ const ListingPageCarousel = loadable(() => import(/* webpackChunkName: "ListingP
 const ManageListingsPage = loadable(() => import(/* webpackChunkName: "ManageListingsPage" */ '../containers/ManageListingsPage/ManageListingsPage'));
 const ManageAccountPage = loadable(() => import(/* webpackChunkName: "ManageAccountPage" */ '../containers/ManageAccountPage/ManageAccountPage'));
 const ManageSubscriptionPage = loadable(() => import(/* webpackChunkName: "ManageSubscriptionPage" */ '../containers/ManageSubscriptionPage/ManageSubscriptionPage'));
+const ManageCreditsPage = loadable(() => import(/* webpackChunkName: "ManageCreditsPage" */ '../containers/ManageCreditsPage/ManageCreditsPage'));
 const PasswordChangePage = loadable(() => import(/* webpackChunkName: "PasswordChangePage" */ '../containers/PasswordChangePage/PasswordChangePage'));
 const PasswordRecoveryPage = loadable(() => import(/* webpackChunkName: "PasswordRecoveryPage" */ '../containers/PasswordRecoveryPage/PasswordRecoveryPage'));
 const PasswordResetPage = loadable(() => import(/* webpackChunkName: "PasswordResetPage" */ '../containers/PasswordResetPage/PasswordResetPage'));
@@ -50,7 +51,8 @@ export const ACCOUNT_SETTINGS_PAGES = [
   'StripePayoutPage',
   'PaymentMethodsPage',
   'ManageAccountPage',
-  'ManageSubscriptionPage'
+  'ManageSubscriptionPage',
+  'ManageCreditsPage'
 ];
 
 // https://en.wikipedia.org/wiki/Universally_unique_identifier#Nil_UUID
@@ -331,7 +333,7 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       name: 'AccountSettingsPage',
       auth: true,
       authPage: 'LoginPage',
-      component: () => <NamedRedirect name="ContactDetailsPage" />,
+      component: () => <NamedRedirect name="ManageCreditsPage" />,
     },
     {
       path: '/account/contact-details',
@@ -394,6 +396,13 @@ const routeConfiguration = (layoutConfig, accessControlConfig) => {
       auth: true,
       authPage: 'LoginPage',
       component: ManageSubscriptionPage,
+    },
+    {
+      path: '/account/manage-credits',
+      name: 'ManageCreditsPage',
+      auth: true,
+      authPage: 'LoginPage',
+      component: ManageCreditsPage,
     },
     {
       path: '/terms-of-service',

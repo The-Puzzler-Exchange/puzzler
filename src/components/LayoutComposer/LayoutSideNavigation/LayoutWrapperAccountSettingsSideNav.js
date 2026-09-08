@@ -131,6 +131,14 @@ const LayoutWrapperAccountSettingsSideNav = props => {
       },
     },
     {
+      text: <FormattedMessage id="LayoutWrapperAccountSettingsSideNav.manageCreditsTabTitle" />,
+      selected: currentPage === 'ManageCreditsPage',
+      id: 'ManageCreditsPageTab',
+      linkProps: {
+        name: 'ManageCreditsPage',
+      },
+    },
+    {
       text: <FormattedMessage id="LayoutWrapperAccountSettingsSideNav.contactDetailsTabTitle" />,
       selected: currentPage === 'ContactDetailsPage',
       id: 'ContactDetailsPageTab',
