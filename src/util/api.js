@@ -183,3 +183,13 @@ export const fetchCredits = () => {
 export const awardSignupPromoCredit = () => {
   return post('/api/credits/signup-promo', {});
 };
+
+// Spend the credit that pays for an exchange.
+// The deduction is keyed by the transaction, so calling this more than once for the
+// same transaction does not deduct the credit again.
+// Returns { spent, balance, alreadySpent, insufficientCredits }.
+//
+// See `server/api/credits/spend-for-exchange.js`.
+export const spendCreditForExchange = transactionId => {
+  return post('/api/credits/spend-for-exchange', { transactionId });
+};

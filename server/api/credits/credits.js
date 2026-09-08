@@ -5,9 +5,9 @@
  *   credits/{userId}/entries/{entryId} { amount, type, description, createdAt }
  *
  * Every change to the balance is written as an entry in the same transaction, so
- * the balance and its history cannot drift apart. Promotions use a deterministic
- * entry id, which makes awarding them idempotent: awarding the same entry twice
- * is a no-op.
+ * the balance and its history cannot drift apart. Entries use a deterministic id,
+ * which makes writing them idempotent: the same entry is never applied twice.
+ * Promotions are keyed by the promotion, exchanges by the transaction they pay for.
  */
 const { getFirestore, FieldValue } = require('../../api-util/firebase');
 
@@ -17,12 +17,8 @@ const ENTRIES_COLLECTION = 'entries';
 // The number of history entries returned to the account page.
 const ENTRIES_LIMIT = 100;
 
-const SIGNUP_PROMO = {
-  entryId: 'signup-promo',
-  amount: 1,
-  type: 'signupPromo',
-  description: 'Signup promo',
-};
+const SIGNUP_PROMO_AMOUNT = 1;
+const EXCHANGE_CREDIT_COST = 1;
 
 const userCreditsRef = userId =>
   getFirestore()
@@ -65,14 +61,18 @@ const fetchCredits = async userId => {
 };
 
 /**
- * Award credits to the given user. The entry id makes this idempotent: if the
- * entry already exists, the balance is left untouched.
+ * Apply a credit entry to the given user's balance. Writing the entry and updating the
+ * balance happen in the same Firestore transaction, and the deterministic entry id makes
+ * the call idempotent: an entry that already exists is never applied again.
  *
  * @param {string} userId Marketplace user id
- * @param {Object} entry { entryId, amount, type, description }
- * @returns {Promise<Object>} { awarded, balance }
+ * @param {Object} entry { entryId, amount, type, description, ...extraFields }
+ * @param {boolean} [requireSufficientBalance] Refuse to apply the entry if it would take
+ *   the balance below zero
+ * @returns {Promise<Object>} { applied, balance, alreadyApplied?, insufficientCredits? }
  */
-const awardCredits = async (userId, { entryId, amount, type, description }) => {
+const applyCreditEntry = async (userId, entry, requireSufficientBalance = false) => {
+  const { entryId, amount, ...entryData } = entry;
   const firestore = getFirestore();
   const creditsRef = userCreditsRef(userId);
   const entryRef = creditsRef.collection(ENTRIES_COLLECTION).doc(entryId);
@@ -86,23 +86,26 @@ const awardCredits = async (userId, { entryId, amount, type, description }) => {
     const balance = creditsDoc.exists ? creditsDoc.data().balance || 0 : 0;
 
     if (entryDoc.exists) {
-      return { awarded: false, balance };
+      return { applied: false, alreadyApplied: true, balance };
     }
 
     const newBalance = balance + amount;
+    if (requireSufficientBalance && newBalance < 0) {
+      return { applied: false, insufficientCredits: true, balance };
+    }
+
     transaction.set(
       creditsRef,
       { balance: newBalance, updatedAt: FieldValue.serverTimestamp() },
       { merge: true }
     );
     transaction.set(entryRef, {
+      ...entryData,
       amount,
-      type,
-      description,
       createdAt: FieldValue.serverTimestamp(),
     });
 
-    return { awarded: true, balance: newBalance };
+    return { applied: true, balance: newBalance };
   });
 };
 
@@ -112,10 +115,48 @@ const awardCredits = async (userId, { entryId, amount, type, description }) => {
  * @param {string} userId Marketplace user id
  * @returns {Promise<Object>} { awarded, balance }
  */
-const awardSignupPromo = userId => awardCredits(userId, SIGNUP_PROMO);
+const awardSignupPromo = async userId => {
+  const result = await applyCreditEntry(userId, {
+    entryId: 'signup-promo',
+    amount: SIGNUP_PROMO_AMOUNT,
+    type: 'signupPromo',
+    description: 'Signup promo',
+  });
+
+  return { awarded: result.applied, balance: result.balance };
+};
+
+/**
+ * Spend the credit that pays for an exchange. The entry is keyed by the transaction, so
+ * retries and double submits of the same order never deduct the credit twice.
+ *
+ * @param {string} userId Marketplace user id
+ * @param {string} transactionId Marketplace transaction id
+ * @returns {Promise<Object>} { spent, balance, alreadySpent, insufficientCredits }
+ */
+const spendCreditForExchange = async (userId, transactionId) => {
+  const result = await applyCreditEntry(
+    userId,
+    {
+      entryId: `exchange-${transactionId}`,
+      amount: -EXCHANGE_CREDIT_COST,
+      type: 'exchange',
+      description: 'Puzzle exchange',
+      transactionId,
+    },
+    true
+  );
+
+  return {
+    spent: result.applied,
+    balance: result.balance,
+    alreadySpent: !!result.alreadyApplied,
+    insufficientCredits: !!result.insufficientCredits,
+  };
+};
 
 module.exports = {
   fetchCredits,
-  awardCredits,
   awardSignupPromo,
+  spendCreditForExchange,
 };

@@ -1564,7 +1564,7 @@
   "ManageCreditsPage.balanceUnit": "{count, plural, one {credit} other {credits}}",
   "ManageCreditsPage.historySubtitle": "History",
   "ManageCreditsPage.noEntries": "You don't have any credit entries yet.",
-  "ManageCreditsPage.entryDescription": "{type, select, signupPromo {Signup promo} other {{description}}}",
+  "ManageCreditsPage.entryDescription": "{type, select, signupPromo {Signup promo} exchange {Puzzle exchange} other {{description}}}",
   "ManageCreditsPage.fetchFailed": "Loading your credits failed. Please try again.",
   "OrderPanel.priceInCredits": "{count, plural, one {# credit} other {# credits}}",
   "ListingCard.priceInCredits": "{count, plural, one {# credit} other {# credits}}"
