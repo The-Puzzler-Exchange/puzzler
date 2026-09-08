@@ -1567,5 +1567,7 @@
   "ManageCreditsPage.entryDescription": "{type, select, signupPromo {Signup promo} exchange {Puzzle exchange} other {{description}}}",
   "ManageCreditsPage.fetchFailed": "Loading your credits failed. Please try again.",
   "OrderPanel.priceInCredits": "{count, plural, one {# credit} other {# credits}}",
-  "ListingCard.priceInCredits": "{count, plural, one {# credit} other {# credits}}"
+  "ListingCard.priceInCredits": "{count, plural, one {# credit} other {# credits}}",
+  "ProductOrderForm.notEnoughCredits": "You need {count, plural, one {# credit} other {# credits}} for this exchange, and you have {balance, plural, one {# credit} other {# credits}}. {manageCreditsLink}",
+  "ProductOrderForm.manageCreditsLinkText": "See your credits"
 }

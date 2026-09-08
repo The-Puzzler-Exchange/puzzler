@@ -5,12 +5,14 @@ import { FormattedMessage, useIntl } from '../../../util/reactIntl';
 import { propTypes } from '../../../util/types';
 import { numberAtLeast, required } from '../../../util/validators';
 import { PURCHASE_PROCESS_NAME } from '../../../transactions/transaction';
+import { fetchCredits } from '../../../util/api';
 
 import {
   Form,
   FieldSelect,
   FieldTextInput,
   InlineTextButton,
+  NamedLink,
   PrimaryButton,
   H3,
   H6,
@@ -21,6 +23,9 @@ import EstimatedCustomerBreakdownMaybe from '../EstimatedCustomerBreakdownMaybe'
 import FetchLineItemsError from '../FetchLineItemsError/FetchLineItemsError.js';
 
 import css from './ProductOrderForm.module.css';
+
+// An exchange is paid with one credit.
+const CREDIT_COST_PER_EXCHANGE = 1;
 
 // Browsers can't render huge number of select options.
 // (stock is shown inside select element)
@@ -112,6 +117,8 @@ const DeliveryMethodMaybe = props => {
 
 const renderForm = formRenderProps => {
   const [mounted, setMounted] = useState(false);
+  const [creditBalance, setCreditBalance] = useState(null);
+  const [creditsFetchInProgress, setCreditsFetchInProgress] = useState(true);
   const {
     // FormRenderProps from final-form
     handleSubmit,
@@ -155,6 +162,31 @@ const renderForm = formRenderProps => {
         onFetchTransactionLineItems,
       });
     }
+  }, []);
+
+  // Side-effect: fetch the credit balance, since an exchange is paid with a credit.
+  // The call fails for unauthenticated users. In that case the balance stays unknown and
+  // the order is not blocked here: the user is directed to log in when they submit.
+  useEffect(() => {
+    let isActive = true;
+
+    fetchCredits()
+      .then(response => {
+        if (isActive) {
+          setCreditBalance(response?.balance);
+          setCreditsFetchInProgress(false);
+        }
+      })
+      .catch(() => {
+        if (isActive) {
+          setCreditBalance(null);
+          setCreditsFetchInProgress(false);
+        }
+      });
+
+    return () => {
+      isActive = false;
+    };
   }, []);
 
   // If form values change, update line-items for the order breakdown
@@ -218,8 +250,15 @@ const renderForm = formRenderProps => {
     currentStock > MAX_QUANTITY_FOR_DROPDOWN ? MAX_QUANTITY_FOR_DROPDOWN : currentStock;
   const quantities = hasStock ? [...Array(selectableStock).keys()].map(i => i + 1) : [];
 
-  const submitInProgress = fetchLineItemsInProgress;
-  const submitDisabled = !hasStock;
+  // Each ordered item costs one credit. The balance is null while it is being fetched,
+  // and for unauthenticated users.
+  const requiredCredits = CREDIT_COST_PER_EXCHANGE * (Number(values?.quantity) || 1);
+  const hasNotEnoughCredits = creditBalance != null && creditBalance < requiredCredits;
+
+  // Keep the button in its loading state until the balance is known, so that it doesn't
+  // flip from enabled to disabled when the balance turns out to be too low.
+  const submitInProgress = fetchLineItemsInProgress || creditsFetchInProgress;
+  const submitDisabled = !hasStock || hasNotEnoughCredits || creditsFetchInProgress;
 
   return (
     <Form onSubmit={handleFormSubmit}>
@@ -279,6 +318,23 @@ const renderForm = formRenderProps => {
       ) : null} */}
 
       <FetchLineItemsError error={fetchLineItemsError} />
+
+      {hasNotEnoughCredits ? (
+        <p className={css.error}>
+          <FormattedMessage
+            id="ProductOrderForm.notEnoughCredits"
+            values={{
+              count: requiredCredits,
+              balance: creditBalance,
+              manageCreditsLink: (
+                <NamedLink name="ManageCreditsPage">
+                  <FormattedMessage id="ProductOrderForm.manageCreditsLinkText" />
+                </NamedLink>
+              ),
+            }}
+          />
+        </p>
+      ) : null}
 
       <div className={css.submitButton}>
         <PrimaryButton type="submit" inProgress={submitInProgress} disabled={submitDisabled}>
