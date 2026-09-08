@@ -1541,5 +1541,20 @@
   "ManageSubscriptionPage.renewsLabel": "Renews on",
   "ManageSubscriptionPage.accessEndsLabel": "Access ends on",
   "ManageSubscriptionPage.manageSubscriptionButton": "Manage subscription",
-  "ManageSubscriptionPage.billingPortalError": "Opening the billing portal failed. Please try again."
+  "ManageSubscriptionPage.billingPortalError": "Opening the billing portal failed. Please try again.",
+  "MembershipPricingCard.badge": "\ud83e\udde9 Full membership",
+  "MembershipPricingCard.planLabel": "Annual plan",
+  "MembershipPricingCard.priceCurrency": "$",
+  "MembershipPricingCard.priceAmount": "30",
+  "MembershipPricingCard.pricePeriod": "/ year",
+  "MembershipPricingCard.priceSubtitle": "That's just $2.50 a month",
+  "MembershipPricingCard.featureListings": "Up to 3 active puzzle listings",
+  "MembershipPricingCard.featureBrowsing": "Unlimited browsing and exchange requests",
+  "MembershipPricingCard.featureLabels": "USPS label generation \u2014 built right in",
+  "MembershipPricingCard.featureCredit": "1 free credit on signup",
+  "MembershipPricingCard.featureRatings": "Member ratings and reviews",
+  "MembershipPricingCard.featureMessaging": "Direct messaging with members",
+  "MembershipPricingCard.featureHistory": "Full exchange history and tracking",
+  "MembershipPricingCard.joinButton": "Join PuzzlerExchange \u2192",
+  "MembershipPricingCard.valueNote": "A new 1,000-piece puzzle averages <b>$20\u2013$25</b>. Just two exchanges and your membership pays for itself."
 }
