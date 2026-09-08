@@ -11,6 +11,7 @@ import {
   STOCK_INFINITE_ITEMS,
 } from '../../../../util/types';
 import { LISTING_PAGE_PARAM_TYPE_NEW } from '../../../../util/urlHelpers';
+import { types as sdkTypes } from '../../../../util/sdkLoader';
 import {
   isFieldForCategory,
   isFieldForListingType,
@@ -195,6 +196,8 @@ const initialValuesForListingFields = (
   }, {});
 };
 
+const { Money } = sdkTypes;
+
 // Stock for listing types that have infinite stock.
 const BILLIARD = 1000000000000000;
 
@@ -224,6 +227,21 @@ const setNoAvailabilityForUnbookableListings = processAlias => {
           ],
         },
       };
+};
+
+/**
+ * The price is not asked on this panel, since the pricing tab is not part of the listing
+ * flow. Listings still need a price: the line items of a transaction are calculated from
+ * it. Set a zero price when the listing doesn't have one yet, and leave an existing price
+ * untouched, so that a price set elsewhere (e.g. in Console) is not overwritten.
+ *
+ * @param {propTypes.ownListing} listing the listing being edited
+ * @param {string} marketplaceCurrency currency of the marketplace (e.g. 'USD')
+ * @returns {Object} { price } or an empty object
+ */
+const setDefaultPriceMaybe = (listing, marketplaceCurrency) => {
+  const hasPrice = listing?.attributes?.price != null;
+  return hasPrice ? {} : { price: new Money(0, marketplaceCurrency) };
 };
 
 /**
@@ -471,6 +489,7 @@ const EditListingDetailsPanel = props => {
                 listingTypes.find(conf => conf.listingType === listingType),
                 transactionProcessAlias
               ),
+              ...setDefaultPriceMaybe(listing, config.currency),
             };
 
             onSubmit(updateValues);
