@@ -22,7 +22,6 @@ import {
   STOCK_INFINITE_MULTIPLE_ITEMS,
   LISTING_STATE_PUBLISHED,
 } from '../../util/types';
-import { formatMoney } from '../../util/currency';
 import { createSlug, parse, stringify } from '../../util/urlHelpers';
 import { userDisplayNameAsString } from '../../util/data';
 import {
@@ -86,31 +85,10 @@ const isPublishedListing = listing => {
   return listing.attributes.state === LISTING_STATE_PUBLISHED;
 };
 
-const priceData = (price, currency, intl) => {
-  if (price && price.currency === currency) {
-    const formattedPrice = formatMoney(intl, price);
-    return { formattedPrice, priceTitle: formattedPrice };
-  } else if (price) {
-    return {
-      formattedPrice: `(${price.currency})`,
-      priceTitle: `Unsupported currency (${price.currency})`,
-    };
-  }
-  return {};
-};
-
 const getCheapestPriceVariant = (priceVariants = []) => {
   return priceVariants.reduce((cheapest, current) => {
     return current.priceInSubunits < cheapest.priceInSubunits ? current : cheapest;
   }, priceVariants[0]);
-};
-
-const formatMoneyIfSupportedCurrency = (price, intl) => {
-  try {
-    return formatMoney(intl, price);
-  } catch (e) {
-    return `(${price.currency})`;
-  }
 };
 
 const openOrderModal = (isOwnListing, isClosed, history, location) => {
@@ -140,16 +118,13 @@ const handleSubmit = (isOwnListing, isClosed, isDirectSubmit, onSubmit, history,
 
 const dateFormattingOptions = { month: 'short', day: 'numeric', weekday: 'short' };
 
+// Exchanges are paid with credits instead of money, so the order panel shows the
+// cost of an exchange in credits.
+const CREDIT_COST_PER_EXCHANGE = 1;
+
 const PriceMaybe = props => {
-  const {
-    price,
-    publicData,
-    validListingTypes,
-    intl,
-    marketplaceCurrency,
-    showCurrencyMismatch = false,
-  } = props;
-  const { listingType, unitType } = publicData || {};
+  const { price, publicData, validListingTypes, showCurrencyMismatch = false } = props;
+  const { listingType } = publicData || {};
 
   const foundListingTypeConfig = validListingTypes.find(conf => conf.listingType === listingType);
   const showPrice = displayPrice(foundListingTypeConfig);
@@ -160,35 +135,18 @@ const PriceMaybe = props => {
     return null;
   }
 
-  // Get formatted price or currency code if the currency does not match with marketplace currency
-  const { formattedPrice, priceTitle } = priceData(price, marketplaceCurrency, intl);
-  const priceValue = (
-    <span className={css.priceValue}>{formatMoneyIfSupportedCurrency(price, intl)}</span>
-  );
-  const pricePerUnit = (
-    <span className={css.perUnit}>
-      <FormattedMessage id="OrderPanel.perUnit" values={{ unitType }} />
-    </span>
+  const creditPrice = (
+    <FormattedMessage id="OrderPanel.priceInCredits" values={{ count: CREDIT_COST_PER_EXCHANGE }} />
   );
 
-  // TODO: In CTA, we don't have space to show proper error message for a mismatch of marketplace currency
-  //       Instead, we show the currency code in place of the price
   return showCurrencyMismatch ? (
     <div className={css.priceContainerInCTA}>
-      <div className={css.priceValueInCTA} title={priceTitle}>
-        <FormattedMessage
-          id="OrderPanel.priceInMobileCTA"
-          values={{ priceValue: formattedPrice }}
-        />
-      </div>
-      <div className={css.perUnitInCTA}>
-        <FormattedMessage id="OrderPanel.perUnit" values={{ unitType }} />
-      </div>
+      <div className={css.priceValueInCTA}>{creditPrice}</div>
     </div>
   ) : (
     <div className={css.priceContainer}>
       <p className={css.price}>
-        <FormattedMessage id="OrderPanel.price" values={{ priceValue, pricePerUnit }} />
+        <span className={css.priceValue}>{creditPrice}</span>
       </p>
     </div>
   );
@@ -463,13 +421,7 @@ const OrderPanel = props => {
           </div>
         )}
         {!hidePrice && (
-          <PriceMaybe
-            price={price}
-            publicData={publicData}
-            validListingTypes={validListingTypes}
-            intl={intl}
-            marketplaceCurrency={marketplaceCurrency}
-          />
+          <PriceMaybe price={price} publicData={publicData} validListingTypes={validListingTypes} />
         )}
 
         {!hideAuthorInfo && (
@@ -587,8 +539,6 @@ const OrderPanel = props => {
           price={price}
           publicData={publicData}
           validListingTypes={validListingTypes}
-          intl={intl}
-          marketplaceCurrency={marketplaceCurrency}
           showCurrencyMismatch
         />
 

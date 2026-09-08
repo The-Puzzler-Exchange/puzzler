@@ -27,9 +27,13 @@ exports[`ListingCard matches snapshot 1`] = `
   >
     <div
       class="price"
-      title="55"
+      title="ListingCard.priceInCredits"
     >
-      ListingCard.price
+      <span
+        class="priceValue"
+      >
+        ListingCard.priceInCredits
+      </span>
     </div>
     <div
       class="mainInfo"
