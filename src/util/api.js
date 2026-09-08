@@ -100,6 +100,15 @@ const post = (path, body, options = {}) => {
   return request(path, requestOptions);
 };
 
+const get = (path, body, options = {}) => {
+  const requestOptions = {
+    ...options,
+    method: methods.GET,
+  };
+
+  return request(path, requestOptions);
+};
+
 // Fetch transaction line items from the local API endpoint.
 //
 // See `server/api/transaction-line-items.js` to see what data should
@@ -150,4 +159,10 @@ export const createUserWithIdp = body => {
 // the marketplace.
 export const deleteUserAccount = body => {
   return post('/api/delete-account', body);
+};
+
+// Create a Stripe Billing Portal session for the current user.
+// Returns { url } which should be used to redirect the user to manage their subscription.
+export const createBillingPortalSession = () => {
+  return get('/api/stripe/create-billing-portal-session');
 };

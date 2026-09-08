@@ -7,6 +7,16 @@ To make Stripe connection work, you also need to set Stripe's private key in the
 
 export const publishableKey = process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY;
 
+/**
+ * Stripe payment link for the marketplace membership subscription.
+ *
+ * NOTE: REACT_APP_STRIPE_SUBSCRIPTION_PAYMENT_LINK is set in a hidden file: .env
+ * The current user's email and id are added to the link as 'prefilled_email' and
+ * 'client_reference_id' query parameters, so that the Stripe webhook handler
+ * (server/api/stripe/) can connect the subscription to the correct user.
+ */
+export const subscriptionPaymentLink = process.env.REACT_APP_STRIPE_SUBSCRIPTION_PAYMENT_LINK;
+
 // A maximum number of days forwards during which a booking can be made.
 // This is limited due to Stripe holding funds up to 90 days from the
 // moment they are charged. However, US accounts can hold funds up to 2 years.

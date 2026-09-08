@@ -121,6 +121,16 @@ const LayoutWrapperAccountSettingsSideNav = props => {
 
   const tabs = [
     {
+      text: (
+        <FormattedMessage id="LayoutWrapperAccountSettingsSideNav.manageSubscriptionTabTitle" />
+      ),
+      selected: currentPage === 'ManageSubscriptionPage',
+      id: 'ManageSubscriptionPageTab',
+      linkProps: {
+        name: 'ManageSubscriptionPage',
+      },
+    },
+    {
       text: <FormattedMessage id="LayoutWrapperAccountSettingsSideNav.contactDetailsTabTitle" />,
       selected: currentPage === 'ContactDetailsPage',
       id: 'ContactDetailsPageTab',
@@ -136,8 +146,8 @@ const LayoutWrapperAccountSettingsSideNav = props => {
         name: 'PasswordChangePage',
       },
     },
-    ...payoutDetailsMaybe,
-    ...paymentMethodsMaybe,
+    // ...payoutDetailsMaybe,
+    // ...paymentMethodsMaybe,
     {
       text: <FormattedMessage id="LayoutWrapperAccountSettingsSideNav.manageAccountTabTitle" />,
       selected: currentPage === 'ManageAccountPage',

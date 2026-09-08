@@ -1532,5 +1532,14 @@
   "UserNav.accountSettings": "Account settings",
   "UserNav.profileSettings": "Profile settings",
   "UserNav.screenreader.userNav": "User profile navigation",
-  "UserNav.yourListings": "Your listings"
+  "UserNav.yourListings": "Your listings",
+  "LayoutWrapperAccountSettingsSideNav.manageSubscriptionTabTitle": "Manage subscription",
+  "ManageSubscriptionPage.title": "Manage subscription",
+  "ManageSubscriptionPage.heading": "Manage subscription",
+  "ManageSubscriptionPage.statusLabel": "Status",
+  "ManageSubscriptionPage.statusValue": "{status, select, trialing {Free trial} past_due {Payment overdue} other {Active}}",
+  "ManageSubscriptionPage.renewsLabel": "Renews on",
+  "ManageSubscriptionPage.accessEndsLabel": "Access ends on",
+  "ManageSubscriptionPage.manageSubscriptionButton": "Manage subscription",
+  "ManageSubscriptionPage.billingPortalError": "Opening the billing portal failed. Please try again."
 }
