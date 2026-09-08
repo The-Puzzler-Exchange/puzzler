@@ -2,6 +2,7 @@
 import { findRouteByRouteName } from '../../util/routes';
 import { ensureStripeCustomer, ensureTransaction } from '../../util/data';
 import { formatMoney } from '../../util/currency';
+import { spendCreditForExchange } from '../../util/api';
 import { NEGOTIATION_PROCESS_NAME, resolveLatestProcessName } from '../../transactions/transaction';
 import { storeData } from './CheckoutPageSessionHelpers';
 
@@ -271,6 +272,24 @@ export const processCheckoutWithPayment = (orderParams, extraPaymentParams) => {
       : onConfirmCardPayment(params);
   };
 
+  //////////////////////////////////////////////////////
+  // Step 2b: pay for the exchange with a credit      //
+  // by deducting it from the customer's balance      //
+  //////////////////////////////////////////////////////
+  const fnSpendCredit = fnParams => {
+    // fnParams should be the order returned by step 1
+    const order = fnParams;
+    const transactionId = order?.id?.uuid;
+
+    if (!transactionId) {
+      throw new Error('Missing transaction id: cannot spend the credit for the exchange.');
+    }
+
+    // The deduction is keyed by the transaction, so a retried or double submitted order
+    // doesn't deduct the credit twice.
+    return spendCreditForExchange(transactionId).then(() => order);
+  };
+
   ///////////////////////////////////////////////////
   // Step 3: complete order                        //
   // by confirming payment against Marketplace API //
@@ -279,7 +298,9 @@ export const processCheckoutWithPayment = (orderParams, extraPaymentParams) => {
     // fnParams should contain { paymentIntent, transactionId } returned in step 2
     // Remember the created PaymentIntent for step 5
     createdPaymentIntent = fnParams.paymentIntent;
-    const transactionId = fnParams.transactionId;
+    // NOTE: step 2 is skipped, so fnParams is the order entity returned by step 1
+    // instead of { paymentIntent, transactionId }.
+    const transactionId = fnParams.transactionId || fnParams.id;
     const transitionName = process.transitions.CONFIRM_PAYMENT;
     const isTransitionedAlready = storedTx?.attributes?.lastTransition === transitionName;
     const orderPromise = isTransitionedAlready
@@ -324,11 +345,19 @@ export const processCheckoutWithPayment = (orderParams, extraPaymentParams) => {
   //   .then(result => fnConfirmPayment({...result}))
   const applyAsync = (acc, val) => acc.then(val);
   const composeAsync = (...funcs) => x => funcs.reduce(applyAsync, Promise.resolve(x));
+
+  // Exchanges are paid with credits, so there is no Stripe payment intent to confirm
+  // (step 2) and no card to save (step 4). This keeps the resolved value in the shape
+  // that the caller expects from fnSavePaymentMethod.
+  const fnOrderResult = order => ({ orderId: order?.id, paymentMethodSaved: true });
+
   const handlePaymentIntentCreation = composeAsync(
     fnRequestPayment,
-    fnConfirmCardPayment,
+    // fnConfirmCardPayment,
+    fnSpendCredit,
     fnConfirmPayment,
-    fnSavePaymentMethod
+    // fnSavePaymentMethod,
+    fnOrderResult
   );
 
   return handlePaymentIntentCreation(orderParams);
