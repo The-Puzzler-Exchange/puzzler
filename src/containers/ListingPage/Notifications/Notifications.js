@@ -33,7 +33,7 @@ const Notifications = props => {
 
   return (
     <>
-      {noPayoutDetailsSetWithOwnListing ? (
+      {/* {noPayoutDetailsSetWithOwnListing ? (
         <ActionBar
           className={className}
           isOwnListing={isOwnListing}
@@ -41,7 +41,7 @@ const Notifications = props => {
           showNoPayoutDetailsSet={noPayoutDetailsSetWithOwnListing}
           currentUser={currentUser}
         />
-      ) : null}
+      ) : null} */}
       <ActionBar
         className={className}
         isOwnListing={isOwnListing}
