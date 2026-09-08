@@ -359,11 +359,19 @@ class StripePaymentForm extends Component {
   }
 
   initializeStripeElement(element) {
+    const cardContainer = element || this.cardContainer;
+
+    // The card element is not always rendered (e.g. when the card details are not asked).
+    // Stripe throws an IntegrationError if mount is called without a DOM element.
+    if (!cardContainer) {
+      return;
+    }
+
     const elements = this.stripe.elements(stripeElementsOptions);
 
     if (!this.card) {
       this.card = elements.create('card', { style: cardStyles });
-      this.card.mount(element || this.cardContainer);
+      this.card.mount(cardContainer);
       this.card.addEventListener('change', this.handleCardValueChange);
       // EventListener is the only way to simulate breakpoints with Stripe.
       window.addEventListener('resize', () => {
@@ -450,8 +458,11 @@ class StripePaymentForm extends Component {
       hasHandledCardPayment
     );
 
-    if (inProgress || onetimePaymentNeedsAttention) {
-      // Already submitting or card value incomplete/invalid
+    // NOTE: onetimePaymentNeedsAttention is left out of the check, since the card element
+    // is not rendered and its value can never become valid.
+    // if (inProgress || onetimePaymentNeedsAttention) {
+    if (inProgress) {
+      // Already submitting
       return;
     }
 
@@ -521,7 +532,10 @@ class StripePaymentForm extends Component {
       hasHandledCardPayment
     );
 
-    const submitDisabled = invalid || onetimePaymentNeedsAttention || submitInProgress;
+    // NOTE: onetimePaymentNeedsAttention is left out of the check, since the card
+    // element is not rendered and its value can never become valid.
+    // const submitDisabled = invalid || onetimePaymentNeedsAttention || submitInProgress;
+    const submitDisabled = invalid || submitInProgress;
     const hasCardError = this.state.error && !submitInProgress;
     const hasPaymentErrors = confirmCardPaymentError || confirmPaymentError;
     const classes = classNames(rootClassName || css.root, className);
@@ -608,6 +622,8 @@ class StripePaymentForm extends Component {
           intl={intl}
         />
 
+        {/* Card details and billing details are not asked, since exchanges are paid
+            with credits instead of money.
         {billingDetailsNeeded && !loadingData ? (
           <React.Fragment>
             {hasDefaultPaymentMethod ? (
@@ -680,6 +696,7 @@ class StripePaymentForm extends Component {
             <IconSpinner />
           </p>
         ) : null}
+        */}
 
         {initiateOrderError ? (
           <span className={css.errorMessage}>{initiateOrderError.message}</span>
@@ -731,14 +748,14 @@ class StripePaymentForm extends Component {
               />
             )}
           </PrimaryButton>
-          {!isDownload && (
+          {/* {!isDownload && (
             <p className={css.paymentInfo}>
               <FormattedMessage
                 id="StripePaymentForm.submitConfirmPaymentFinePrint"
                 values={{ isBooking: isBookingYesNo, name: providerDisplayName }}
               />
             </p>
-          )}
+          )} */}
         </div>
       </Form>
     ) : (
