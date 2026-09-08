@@ -115,6 +115,12 @@ if (cspEnabled) {
   app.use(
     bodyParser.json({
       type: ['json', 'application/csp-report'],
+      verify: (req, res, buf) => {
+        // Store raw body for Stripe webhook endpoints
+        if (req.originalUrl.startsWith('/api/stripe/webhooks')) {
+          req.rawBody = buf;
+        }
+      },
     })
   );
 
