@@ -103,7 +103,12 @@ const tabsForListingType = (processName, listingTypeConfig) => {
   //         that it is clear to the user why the 'publish' button is disabled during verification
   const tabs = {
     ['default-booking']: [DETAILS, ...locationMaybe, PRICING, AVAILABILITY, ...styleOrPhotosTab],
-    ['default-purchase']: [DETAILS, PRICING_AND_STOCK, ...deliveryMaybe, ...styleOrPhotosTab],
+    ['default-purchase']: [
+      DETAILS,
+      // PRICING_AND_STOCK,
+      ...deliveryMaybe,
+      ...styleOrPhotosTab,
+    ],
     ['default-negotiation']: [DETAILS, ...locationMaybe, ...pricingMaybe, ...styleOrPhotosTab],
     ['default-inquiry']: [DETAILS, ...locationMaybe, ...pricingMaybe, ...styleOrPhotosTab],
     ['default-download']: [DETAILS, ...locationMaybe, FILES, ...pricingMaybe, ...styleOrPhotosTab],

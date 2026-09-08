@@ -8,6 +8,7 @@ import {
   LISTING_STATE_DRAFT,
   SCHEMA_TYPE_ENUM,
   SCHEMA_TYPE_MULTI_ENUM,
+  STOCK_INFINITE_ITEMS,
 } from '../../../../util/types';
 import { LISTING_PAGE_PARAM_TYPE_NEW } from '../../../../util/urlHelpers';
 import {
@@ -15,7 +16,10 @@ import {
   isFieldForListingType,
   pickCategoryFields,
 } from '../../../../util/fieldHelpers';
-import { isBookingProcessAlias } from '../../../../transactions/transaction';
+import {
+  isBookingProcessAlias,
+  isPurchaseProcessAlias,
+} from '../../../../transactions/transaction';
 
 // Import shared components
 import { H3, ListingLink } from '../../../../components';
@@ -191,6 +195,9 @@ const initialValuesForListingFields = (
   }, {});
 };
 
+// Stock for listing types that have infinite stock.
+const BILLIARD = 1000000000000000;
+
 /**
  * If listing represents something else than a bookable listing, we set availability-plan to seats=0.
  * Note: this is a performance improvement since the API is backwards compatible.
@@ -217,6 +224,37 @@ const setNoAvailabilityForUnbookableListings = processAlias => {
           ],
         },
       };
+};
+
+/**
+ * Stock is not asked on this panel, but listings of a purchase process need stock to be
+ * purchasable. Since the pricing and stock tab is not part of the wizard, the stock is set
+ * here when the listing doesn't have any yet (i.e. when the draft listing is created).
+ *
+ * An existing stock is left untouched: it might have been decremented by a transaction.
+ *
+ * NOTE: this is going to be used on a separate call to API
+ * in EditListingPage.duck.js: sdk.stock.compareAndSet();
+ *
+ * @param {propTypes.ownListing} listing the listing being edited
+ * @param {Object} listingTypeConfig listing type configuration of the selected listing type
+ * @param {string} processAlias transaction process alias selected for this listing
+ * @returns {Object} { stockUpdate } or an empty object
+ */
+const setStockForNewPurchaseListings = (listing, listingTypeConfig, processAlias) => {
+  const hasCurrentStock = listing?.currentStock?.attributes?.quantity != null;
+
+  if (!isPurchaseProcessAlias(processAlias) || hasCurrentStock) {
+    return {};
+  }
+
+  const hasInfiniteStock = STOCK_INFINITE_ITEMS.includes(listingTypeConfig?.stockType);
+  return {
+    stockUpdate: {
+      oldTotal: null,
+      newTotal: hasInfiniteStock ? BILLIARD : 1,
+    },
+  };
 };
 
 /**
@@ -428,6 +466,11 @@ const EditListingDetailsPanel = props => {
               },
               privateData: privateListingFields,
               ...setNoAvailabilityForUnbookableListings(transactionProcessAlias),
+              ...setStockForNewPurchaseListings(
+                listing,
+                listingTypes.find(conf => conf.listingType === listingType),
+                transactionProcessAlias
+              ),
             };
 
             onSubmit(updateValues);
