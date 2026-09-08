@@ -141,6 +141,7 @@ const renderForm = formRenderProps => {
     price,
     payoutDetailsWarning,
     marketplaceName,
+    isAuthenticated,
     values,
     sectionHeadingAs = 'h3',
   } = formRenderProps;
@@ -165,10 +166,16 @@ const renderForm = formRenderProps => {
   }, []);
 
   // Side-effect: fetch the credit balance, since an exchange is paid with a credit.
-  // The call fails for unauthenticated users. In that case the balance stays unknown and
-  // the order is not blocked here: the user is directed to log in when they submit.
+  // Unauthenticated users don't have credits, and the endpoint requires authentication,
+  // so the call is skipped for them. The order is not blocked in that case: they are
+  // directed to log in when they submit.
   useEffect(() => {
     let isActive = true;
+
+    if (!isAuthenticated) {
+      setCreditsFetchInProgress(false);
+      return;
+    }
 
     fetchCredits()
       .then(response => {
@@ -187,7 +194,7 @@ const renderForm = formRenderProps => {
     return () => {
       isActive = false;
     };
-  }, []);
+  }, [isAuthenticated]);
 
   // If form values change, update line-items for the order breakdown
   const handleOnChange = formValues => {
@@ -382,6 +389,7 @@ const renderForm = formRenderProps => {
  * @param {boolean} props.fetchLineItemsInProgress - Whether the line items are being fetched
  * @param {propTypes.error} props.fetchLineItemsError - The error for fetching the line items
  * @param {Function} props.onContactUser - The function to contact the user
+ * @param {boolean} [props.isAuthenticated] - Whether the user is logged in
  * @param {'h2'|'h3'} [props.sectionHeadingAs='h3'] - Semantic heading level for form section titles
  * @returns {JSX.Element}
  */

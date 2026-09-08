@@ -328,6 +328,7 @@ export const ListingPageComponent = props => {
               }
               sectionHeadingAs="h2"
               payoutDetailsWarning={payoutDetailsWarning}
+              isAuthenticated={isAuthenticated}
               author={ensuredAuthor}
               onManageDisableScrolling={onManageDisableScrolling}
               onContactUser={onContactUser}

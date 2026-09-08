@@ -969,6 +969,7 @@ export const TransactionPageComponent = props => {
           titleClassName={css.orderTitle}
           listing={listing}
           isOwnListing={isOwnSale}
+          isAuthenticated={!!currentUser?.id}
           lineItemUnitType={lineItemUnitType}
           title={listingTitle}
           titleDesktop={

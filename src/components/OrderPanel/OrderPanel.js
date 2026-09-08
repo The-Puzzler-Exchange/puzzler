@@ -211,6 +211,7 @@ const hasValidPriceVariants = priceVariants => {
  * @param {propTypes.listing} props.listing - The listing data (either regular or own listing)
  * @param {Array<ListingTypeConfig>} props.validListingTypes - Array of valid listing type configurations
  * @param {boolean} [props.isOwnListing=false] - Whether the listing belongs to the current user
+ * @param {boolean} [props.isAuthenticated] - Whether the user is logged in
  * @param {listingType.user|listingType.currentUser} props.author - The listing author's user data
  * @param {ReactNode} [props.authorLink] - Custom component for rendering the author link
  * @param {ReactNode} [props.payoutDetailsWarning] - Warning message about payout details
@@ -250,6 +251,7 @@ const OrderPanel = props => {
     validListingTypes,
     lineItemUnitType: lineItemUnitTypeMaybe,
     isOwnListing,
+    isAuthenticated,
     onSubmit,
     title,
     titleDesktop,
@@ -490,6 +492,7 @@ const OrderPanel = props => {
         ) : showProductOrderForm ? (
           <ProductOrderForm
             formId="OrderPanelProductOrderForm"
+            isAuthenticated={isAuthenticated}
             currentStock={currentStock}
             allowOrdersOfMultipleItems={allowOrdersOfMultipleItems}
             pickupEnabled={pickupEnabled && displayPickup}
