@@ -39,7 +39,7 @@ export const getStateDataForPurchaseProcess = (txInfo, processInfo) => {
       return { processName, processState, showOrderPanel, showDetailCardHeadings: true };
     })
     .cond([states.INQUIRY, PROVIDER], () => {
-      return { processName, processState, showDetailCardHeadings: true };
+      return { processName, processState, showDetailCardHeadings: true, showBreakDown: false };
     })
     .cond([states.PURCHASED, CUSTOMER], () => {
       return {
@@ -61,6 +61,7 @@ export const getStateDataForPurchaseProcess = (txInfo, processInfo) => {
         processState,
         showDetailCardHeadings: true,
         showActionButtons: true,
+        showBreakDown: false,
         primaryButtonProps: actionButtonProps(transitions.MARK_DELIVERED, PROVIDER, {
           actionButtonTranslationId,
         }),
@@ -83,6 +84,8 @@ export const getStateDataForPurchaseProcess = (txInfo, processInfo) => {
         showDetailCardHeadings: true,
         showReviewAsFirstLink: true,
         showActionButtons: true,
+        // This state is resolved for both roles: hide the breakdown from the provider.
+        showBreakDown: isCustomer,
         primaryButtonProps: leaveReviewProps,
       };
     })
@@ -103,15 +106,22 @@ export const getStateDataForPurchaseProcess = (txInfo, processInfo) => {
         showDetailCardHeadings: true,
         showReviewAsSecondLink: true,
         showActionButtons: true,
+        showBreakDown: false,
         primaryButtonProps: leaveReviewProps,
       };
     })
     .cond([states.REVIEWED, _], () => {
-      return { processName, processState, showDetailCardHeadings: true, showReviews: true };
+      return {
+        processName,
+        processState,
+        showDetailCardHeadings: true,
+        showReviews: true,
+        showBreakDown: isCustomer,
+      };
     })
     .default(() => {
       // Default values for other states
-      return { processName, processState, showDetailCardHeadings: true };
+      return { processName, processState, showDetailCardHeadings: true, showBreakDown: isCustomer };
     })
     .resolve();
 };
