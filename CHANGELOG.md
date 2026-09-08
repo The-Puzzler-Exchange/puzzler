@@ -14,10 +14,39 @@ way to update this template, but currently, we follow a pattern:
 
 ## Upcoming version 2026-XX-XX
 
+- [fix] Fix to transaction process. [#922](https://github.com/sharetribe/web-template/pull/922)
+- [fix] Fixes to Marketplace and Email texts. [#921](https://github.com/sharetribe/web-template/pull/921)
+
+## [v12.3.0] 2026-08-31
+
+- [fix] EditListingPage: fix a bug with listing image ids (duplicates were not removed on some edge
+  cases). [#919](https://github.com/sharetribe/web-template/pull/919)
+- [fix] Menu.js: this.menu is null when the component is unmounting (ref callback receives null).
+  [#918](https://github.com/sharetribe/web-template/pull/918)
+- [fix] ListingCard: aria-label was not showing the price value.
+  [#917](https://github.com/sharetribe/web-template/pull/917)
+- [fix] richText.js: return coalesced strings instead of the previous array of strings.
+  [#916](https://github.com/sharetribe/web-template/pull/916)
+- [change] log.js: improve error handling and capture API errors better for Sentry.
+  [#915](https://github.com/sharetribe/web-template/pull/915)
+- [fix] Add imgix.net to CSP / connect-src.
+  [#914](https://github.com/sharetribe/web-template/pull/914)
+- [change] LoadableComponentErrorBoundary.js: add auto-reload and persist listing order data to
+  sessionStorage on ListingPage. [#913](https://github.com/sharetribe/web-template/pull/913)
+- [fix] CustomLinksMenu: post-a-new-listing link was not hidden after signup.
+  [#912](https://github.com/sharetribe/web-template/pull/912)
+- [fix] Topbar: search form keeps modified value on mobile layout over modal re-opening.
+  [#911](https://github.com/sharetribe/web-template/pull/911)
+- [change] richText.js: coalesce adjacent strings to avoid multiple spaces between words.
+  [#910](https://github.com/sharetribe/web-template/pull/910)
+- [fix] OrderPanel: headings needed different heading levels on listing page vs transaction page.
+  [#909](https://github.com/sharetribe/web-template/pull/909)
 - [change] Update sharetribe-flex-sdk to v1.24.2.
   [#907](https://github.com/sharetribe/web-template/pull/907)
 - [add] Add currently available translations for DE, ES, FR.
   [#906](https://github.com/sharetribe/web-template/pull/906)
+
+  [v12.3.0]: https://github.com/sharetribe/web-template/compare/v12.2.0...v12.3.0
 
 ## [v12.2.0] 2026-08-13
 
