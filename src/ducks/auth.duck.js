@@ -2,7 +2,7 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import * as log from '../util/log';
 import { storableError } from '../util/errors';
 import { clearCurrentUser, fetchCurrentUser } from './user.duck';
-import { createUserWithIdp } from '../util/api';
+import { awardSignupPromoCredit, createUserWithIdp } from '../util/api';
 import { clearStoredReferralData } from '../util/webStorageHelpers';
 
 const authenticated = authInfo => authInfo?.isAnonymous === false;
@@ -101,6 +101,13 @@ const logoutThunk = createAsyncThunk(
   }
 );
 
+// Award the signup promo credit to a freshly created user. The endpoint is
+// idempotent, and a failure here must not fail the signup itself.
+const awardSignupPromo = () =>
+  awardSignupPromoCredit().catch(e => {
+    log.error(e, 'award-signup-promo-failed');
+  });
+
 const signupThunk = createAsyncThunk(
   'auth/signup',
   (params, thunkAPI) => {
@@ -111,6 +118,7 @@ const signupThunk = createAsyncThunk(
       .then(() =>
         dispatch(loginThunk({ username: params.email, password: params.password })).unwrap()
       )
+      .then(() => awardSignupPromo())
       .then(() => {
         // Clear potential referral data from session storage
         clearStoredReferralData();
@@ -141,6 +149,7 @@ const signupWithIdpThunk = createAsyncThunk(
     const { rejectWithValue, dispatch } = thunkAPI;
     return createUserWithIdp(params)
       .then(() => dispatch(fetchCurrentUser({ afterLogin: true })))
+      .then(() => awardSignupPromo())
       .then(() => {
         // Clear potential referral data from session storage
         clearStoredReferralData();

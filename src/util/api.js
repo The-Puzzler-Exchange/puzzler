@@ -166,3 +166,20 @@ export const deleteUserAccount = body => {
 export const createBillingPortalSession = () => {
   return get('/api/stripe/create-billing-portal-session');
 };
+
+// Fetch the credit balance and the credit history of the current user.
+// Returns { balance, entries }.
+//
+// See `server/api/credits/show.js`.
+export const fetchCredits = () => {
+  return get('/api/credits');
+};
+
+// Award the signup promo credit to the current user.
+// The endpoint is idempotent: calling it for a user who has already received the
+// promo leaves the balance untouched. Returns { awarded, balance }.
+//
+// See `server/api/credits/award-signup-promo.js`.
+export const awardSignupPromoCredit = () => {
+  return post('/api/credits/signup-promo', {});
+};
