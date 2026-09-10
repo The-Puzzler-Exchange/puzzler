@@ -175,6 +175,9 @@ const CheckoutPage = props => {
     initiateInquiryError,
     initiateOrderError,
     confirmPaymentError,
+    shipment,
+    getShippingRatesInProgress,
+    getShippingRatesError,
   } = useSelector(state => state.CheckoutPage);
 
   const currentUser = useSelector(state => state.user.currentUser);
@@ -254,6 +257,9 @@ const CheckoutPage = props => {
       initiateOrderError={initiateOrderError}
       confirmCardPaymentError={confirmCardPaymentError}
       confirmPaymentError={confirmPaymentError}
+      shipment={shipment}
+      getShippingRatesInProgress={getShippingRatesInProgress}
+      getShippingRatesError={getShippingRatesError}
       paymentIntent={paymentIntent}
       retrievePaymentIntentError={retrievePaymentIntentError}
       scrollingDisabled={scrollingDisabled}

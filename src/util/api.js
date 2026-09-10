@@ -193,3 +193,20 @@ export const awardSignupPromoCredit = () => {
 export const spendCreditForExchange = transactionId => {
   return post('/api/credits/spend-for-exchange', { transactionId });
 };
+
+export const getShippingRates = listingId => {
+  const id = typeof listingId === 'string' ? listingId : listingId?.uuid;
+  return post('/api/address/shipping-rates', { listingId: id });
+};
+
+export const createShippingPaymentIntent = body => {
+  return post('/api/shipping/create-payment-intent', body);
+};
+
+export const refundShippingPaymentIntent = paymentIntentId => {
+  return post('/api/shipping/refund-payment-intent', { paymentIntentId });
+};
+
+export const buyShippingLabel = transactionId => {
+  return post('/api/shipping/buy-label', { transactionId });
+};

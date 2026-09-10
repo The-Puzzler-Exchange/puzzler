@@ -259,6 +259,33 @@
   flex-grow: 1;
 }
 
+.shippingCheckout {
+  display: flex;
+  flex-direction: column;
+}
+
+.checkoutStepNav {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.checkoutStepHeading {
+  margin: 0;
+}
+
+.changeAddressButton {
+  composes: marketplaceSmallFontStyles from global;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--marketplaceColor);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
 /* Details column is visible only on desktop */
 .detailsContainerDesktop {
   display: none;
