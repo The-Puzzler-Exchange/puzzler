@@ -14,6 +14,7 @@ const wellKnownRouter = require('./wellKnownRouter');
 const webmanifestResourceRoute = require('./resources/webmanifest');
 const robotsTxtRoute = require('./resources/robotsTxt');
 const sitemapResourceRoute = require('./resources/sitemap');
+const { startCancelRefundPoller } = require('./jobs/cancelRefundPoller');
 
 const radix = 10;
 const PORT = parseInt(process.env.REACT_APP_DEV_API_SERVER_PORT, radix);
@@ -50,4 +51,5 @@ app.get('/sitemap-:resource', sitemapResourceRoute);
 app.listen(PORT, () => {
   // eslint-disable-next-line no-console
   console.log(`API server listening on ${PORT}`);
+  startCancelRefundPoller();
 });
