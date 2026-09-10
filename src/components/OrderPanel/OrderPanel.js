@@ -495,9 +495,9 @@ const OrderPanel = props => {
             isAuthenticated={isAuthenticated}
             currentStock={currentStock}
             allowOrdersOfMultipleItems={allowOrdersOfMultipleItems}
-            pickupEnabled={pickupEnabled && displayPickup}
-            shippingEnabled={shippingEnabled && displayShipping}
-            displayDeliveryMethod={displayPickup || displayShipping}
+            pickupEnabled={isPurchase ? false : pickupEnabled && displayPickup}
+            shippingEnabled={isPurchase ? true : shippingEnabled && displayShipping}
+            displayDeliveryMethod={isPurchase ? true : displayPickup || displayShipping}
             onContactUser={onContactUser}
             {...sharedProps}
           />

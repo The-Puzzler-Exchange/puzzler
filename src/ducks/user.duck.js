@@ -392,6 +392,22 @@ export default userSlice.reducer;
 
 export const { clearCurrentUser, setCurrentUser, setCurrentUserHasOrders } = userSlice.actions;
 
+/**
+ * Update the current member profile (e.g. ship-from address).
+ *
+ * @param {Object} params Marketplace API currentUser.updateProfile params
+ * @returns {Promise}
+ */
+export const updateCurrentUserProfile = params => (dispatch, getState, sdk) => {
+  return sdk.currentUser.updateProfile(params, { expand: true }).then(response => {
+    const entities = denormalisedResponseEntities(response);
+    if (entities[0]) {
+      dispatch(setCurrentUser(entities[0]));
+    }
+    return response;
+  });
+};
+
 // ================ Selectors ================ //
 
 export const hasCurrentUserErrors = state => {

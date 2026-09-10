@@ -140,6 +140,7 @@ export { default as SavedCardDetails } from './SavedCardDetails/SavedCardDetails
 export const SectionText = loadable(() => import(/* webpackChunkName: "SectionText" */ './CustomExtendedDataSection/SectionText'));
 export { default as StripeConnectAccountStatusBox } from './StripeConnectAccountStatusBox/StripeConnectAccountStatusBox';
 export { default as StripePaymentAddress } from './StripePaymentAddress/StripePaymentAddress';
+export { default as ShippingAddressForm } from './ShippingAddressForm/ShippingAddressForm';
 export { default as TopbarSimplified } from './TopbarSimplified/TopbarSimplified';
 
 
