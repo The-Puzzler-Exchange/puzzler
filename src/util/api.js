@@ -194,6 +194,15 @@ export const spendCreditForExchange = transactionId => {
   return post('/api/credits/spend-for-exchange', { transactionId });
 };
 
+// Create a Stripe Checkout session for buying a credit.
+// Returns { url }, which should be used to redirect the member to Stripe. The credit is
+// awarded by the webhook handler once Stripe reports the session as paid.
+//
+// See `server/api/stripe/create-credit-checkout-session.js`.
+export const createCreditCheckoutSession = () => {
+  return post('/api/stripe/create-credit-checkout-session', {});
+};
+
 export const getShippingRates = listingId => {
   const id = typeof listingId === 'string' ? listingId : listingId?.uuid;
   return post('/api/address/shipping-rates', { listingId: id });

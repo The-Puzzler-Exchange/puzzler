@@ -114,3 +114,7 @@
   composes: h4 from global;
   color: var(--colorFail);
 }
+
+.purchaseButton {
+  margin-bottom: 32px;
+}
