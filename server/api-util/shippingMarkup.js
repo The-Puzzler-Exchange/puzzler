@@ -1,15 +1,31 @@
-const DEFAULT_MARKUP_PERCENT = 3.5;
+const DEFAULT_MARKUP_PERCENT = 4;
+
+// The payment processing fee has a fixed part (Stripe charges 2.9% + $0.30 per
+// transaction), which a percent-only markup can never cover: the smaller the rate, the
+// bigger the share the fixed part takes of it.
+const DEFAULT_MARKUP_FIXED = 0.4;
+
+const numberFromEnv = (value, fallback) => {
+  const parsed = value == null || value === '' ? fallback : Number(value);
+  return Number.isFinite(parsed) ? parsed : fallback;
+};
 
 /**
  * Markup percent from env. The PO can change SHIPPING_RATE_MARKUP_PERCENT later.
  *
  * @returns {number}
  */
-const getShippingMarkupPercent = () => {
-  const raw = process.env.SHIPPING_RATE_MARKUP_PERCENT;
-  const parsed = raw == null || raw === '' ? DEFAULT_MARKUP_PERCENT : Number(raw);
-  return Number.isFinite(parsed) ? parsed : DEFAULT_MARKUP_PERCENT;
-};
+const getShippingMarkupPercent = () =>
+  numberFromEnv(process.env.SHIPPING_RATE_MARKUP_PERCENT, DEFAULT_MARKUP_PERCENT);
+
+/**
+ * Fixed markup in major currency units (dollars) from env.
+ * The PO can change SHIPPING_RATE_MARKUP_FIXED later.
+ *
+ * @returns {number}
+ */
+const getShippingMarkupFixed = () =>
+  numberFromEnv(process.env.SHIPPING_RATE_MARKUP_FIXED, DEFAULT_MARKUP_FIXED);
 
 /**
  * Listed rate in major currency units (dollars), rounded to cents.
@@ -23,7 +39,7 @@ const applyShippingMarkup = shippoAmount => {
   if (!Number.isFinite(raw) || raw < 0) {
     throw new Error('Invalid Shippo amount');
   }
-  const listed = raw * (1 + getShippingMarkupPercent() / 100);
+  const listed = raw * (1 + getShippingMarkupPercent() / 100) + getShippingMarkupFixed();
   return Math.round(listed * 100) / 100;
 };
 
@@ -37,7 +53,9 @@ const listedAmountToCents = listedAmount => Math.round(Number(listedAmount) * 10
 
 module.exports = {
   DEFAULT_MARKUP_PERCENT,
+  DEFAULT_MARKUP_FIXED,
   getShippingMarkupPercent,
+  getShippingMarkupFixed,
   applyShippingMarkup,
   listedAmountToCents,
 };
