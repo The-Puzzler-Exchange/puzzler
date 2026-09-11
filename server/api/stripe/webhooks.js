@@ -1,6 +1,7 @@
 const log = require('../../log');
 const stripe = require('./client');
 const { handleCheckoutSessionCompleted, handleSubscriptionChange } = require('./membership');
+const { handleCreditPurchaseCompleted } = require('./credit-purchase');
 
 const { STRIPE_WEBHOOK_SECRET } = process.env;
 
@@ -9,8 +10,9 @@ const { STRIPE_WEBHOOK_SECRET } = process.env;
  *
  * Stripe events that this endpoint expects. Enable exactly these in the Stripe
  * dashboard (Developers > Webhooks):
- *   - checkout.session.completed: a member has subscribed. Links the Stripe customer
- *     to the marketplace user and grants the right to post listings.
+ *   - checkout.session.completed: a member has subscribed, or bought credits. Links the
+ *     Stripe customer to the marketplace user and grants the right to post listings, or
+ *     awards the bought credits.
  *   - customer.subscription.updated: the subscription status has changed (e.g. renewal
  *     failed, subscription was cancelled at period end or reactivated).
  *   - customer.subscription.deleted: the subscription has ended. Revokes the rights.
@@ -37,7 +39,10 @@ module.exports = async (req, res) => {
   try {
     switch (event.type) {
       case 'checkout.session.completed':
+        // A completed session is either a new subscription or a credit purchase.
+        // Each handler ignores the sessions that are not its own.
         await handleCheckoutSessionCompleted(event.data.object);
+        await handleCreditPurchaseCompleted(event.data.object);
         break;
 
       case 'customer.subscription.updated':
