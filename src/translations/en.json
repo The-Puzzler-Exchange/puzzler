@@ -693,7 +693,7 @@
   "ManageAccountPage.title": "Manage account",
   "ManageCreditsPage.balanceLabel": "Your balance",
   "ManageCreditsPage.balanceUnit": "{count, plural, one {credit} other {credits}}",
-  "ManageCreditsPage.entryDescription": "{type, select, signupPromo {Signup promo} exchange {Puzzle exchange} purchase {Credit purchase} other {{description}}}",
+  "ManageCreditsPage.entryDescription": "{type, select, signupPromo {Signup promo} exchange {Puzzle exchange} exchangeRefund {Puzzle exchange refund} exchangeEarned {Puzzle exchange completed} purchase {Credit purchase} other {{description}}}",
   "ManageCreditsPage.fetchFailed": "Loading your credits failed. Please try again.",
   "ManageCreditsPage.heading": "Manage credits",
   "ManageCreditsPage.historySubtitle": "History",

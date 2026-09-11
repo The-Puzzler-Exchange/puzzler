@@ -9,7 +9,9 @@ const US_COUNTRY = 'US';
  */
 const getShippoAddressFromUser = user => {
   const email = user?.attributes?.email;
-  const shippingAddress = user?.attributes?.profile?.protectedData?.shippingAddress;
+  const shippingAddress =
+    user?.attributes?.profile?.protectedData?.shippingAddress ||
+    user?.attributes?.profile?.privateData?.shippingAddress;
   if (!shippingAddress) {
     return null;
   }

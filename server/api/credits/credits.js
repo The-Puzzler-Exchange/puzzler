@@ -2,12 +2,13 @@
  * Credits are stored in Firestore:
  *
  *   credits/{userId}                  { balance, updatedAt }
- *   credits/{userId}/entries/{entryId} { amount, type, description, createdAt }
+ *   credits/{userId}/entries/{entryId} { amount, type, description, createdAt, transactionId?, customerId? }
  *
  * Every change to the balance is written as an entry in the same transaction, so
  * the balance and its history cannot drift apart. Entries use a deterministic id,
  * which makes writing them idempotent: the same entry is never applied twice.
- * Promotions are keyed by the promotion, exchanges by the transaction they pay for.
+ * Promotions are keyed by the promotion, customer spends and provider earns
+ * by the transaction they belong to.
  */
 const { getFirestore, FieldValue } = require('../../api-util/firebase');
 
@@ -26,12 +27,14 @@ const userCreditsRef = userId =>
     .doc(userId);
 
 const serializeEntry = doc => {
-  const { amount, type, description, createdAt } = doc.data();
+  const { amount, type, description, createdAt, transactionId, customerId } = doc.data();
   return {
     id: doc.id,
     amount,
     type,
     description,
+    transactionId: transactionId || null,
+    customerId: customerId || null,
     // Firestore timestamps are serialized to milliseconds for the web app.
     createdAt: createdAt ? createdAt.toMillis() : null,
   };
@@ -179,6 +182,33 @@ const returnCreditForExchange = async (userId, transactionId) => {
 };
 
 /**
+ * Award the credit the provider earns when an exchange auto-completes. Keyed by the
+ * transaction so poller retries never credit twice. Stores the customer id on the
+ * entry so the earn can be traced later.
+ *
+ * @param {string} providerId Marketplace user id of the provider
+ * @param {string} transactionId Marketplace transaction id
+ * @param {string} [customerId] Marketplace user id of the customer
+ * @returns {Promise<Object>} { awarded, balance, alreadyAwarded }
+ */
+const awardCreditForCompletedExchange = async (providerId, transactionId, customerId) => {
+  const result = await applyCreditEntry(providerId, {
+    entryId: `exchange-earned-${transactionId}`,
+    amount: EXCHANGE_CREDIT_COST,
+    type: 'exchangeEarned',
+    description: 'Puzzle exchange completed',
+    transactionId,
+    ...(customerId ? { customerId } : {}),
+  });
+
+  return {
+    awarded: result.applied,
+    balance: result.balance,
+    alreadyAwarded: !!result.alreadyApplied,
+  };
+};
+
+/**
  * Award credits that the member has paid for. The entry is keyed by the Stripe checkout
  * session, so a redelivered webhook never awards the same purchase twice.
  *
@@ -208,5 +238,6 @@ module.exports = {
   awardSignupPromo,
   spendCreditForExchange,
   returnCreditForExchange,
+  awardCreditForCompletedExchange,
   awardPurchasedCredits,
 };

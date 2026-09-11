@@ -13,6 +13,7 @@ import { createSlug } from '../../util/urlHelpers';
 import { formatMoney } from '../../util/currency';
 import { types as sdkTypes } from '../../util/sdkLoader';
 import { createShippingPaymentIntent, refundShippingPaymentIntent } from '../../util/api';
+import { getProfileShippingAddress, isCompleteShippingAddress } from '../../util/shippingAddress';
 import {
   isTransactionInitiateListingNotFoundError,
   isTransactionsTransitionInvalidTransition,
@@ -49,7 +50,6 @@ import {
   hasDefaultPaymentMethod,
   hasPaymentExpired,
   hasTransactionPassedPendingPayment,
-  isCompleteShippingAddress,
   processCheckoutWithPayment,
   setOrderPageInitialValues,
 } from './CheckoutPageTransactionHelpers.js';
@@ -325,7 +325,7 @@ const handleSubmit = (
   const listingId = pageData?.listing?.id?.uuid;
   const shippingRateId = selectedShippingRate?.objectId;
   const shipmentId = shipment?.objectId;
-  const shippingAddress = currentUser?.attributes?.profile?.protectedData?.shippingAddress || {};
+  const shippingAddress = getProfileShippingAddress(currentUser);
 
   if (!listingId || !shippingRateId || !shipmentId || !stripe || !card) {
     setSubmitting(false);
@@ -632,7 +632,7 @@ export const CheckoutPageWithPayment = props => {
     ? `${currentUser.attributes.profile.firstName} ${currentUser.attributes.profile.lastName}`
     : null;
 
-  const shippingAddress = currentUser?.attributes?.profile?.protectedData?.shippingAddress || {};
+  const shippingAddress = getProfileShippingAddress(currentUser);
   const hasAddress = isCompleteShippingAddress(shippingAddress);
   const listingId = listing?.id?.uuid;
 

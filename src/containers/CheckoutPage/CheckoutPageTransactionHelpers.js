@@ -123,7 +123,7 @@ export const getShippingDetailsMaybe = formValues => {
 /**
  * Map a member profile shipping address to transaction protectedData.
  *
- * @param {Object} address protectedData.shippingAddress
+ * @param {Object} address profile shippingAddress
  * @returns shippingDetails object or empty object
  */
 export const getShippingDetailsFromProfileAddress = address => {
@@ -145,22 +145,6 @@ export const getShippingDetailsFromProfileAddress = address => {
     },
   };
 };
-
-/**
- * True when the US ship-to / ship-from address has the required fields.
- *
- * @param {Object} address
- * @returns {boolean}
- */
-export const isCompleteShippingAddress = address =>
-  !!(
-    address?.name &&
-    address?.street1 &&
-    address?.city &&
-    address?.state &&
-    address?.zip &&
-    address?.phone
-  );
 
 /**
  * Check if the default payment method exists for the currentUser

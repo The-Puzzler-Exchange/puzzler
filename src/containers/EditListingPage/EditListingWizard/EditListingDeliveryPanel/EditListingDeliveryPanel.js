@@ -4,20 +4,18 @@ import classNames from 'classnames';
 import { FormattedMessage } from '../../../../util/reactIntl';
 import { LISTING_STATE_DRAFT, propTypes } from '../../../../util/types';
 import { getParcelInitialValues } from '../../../../util/parcel';
+import { getProfileShippingAddress } from '../../../../util/shippingAddress';
 
 import { H3, ListingLink } from '../../../../components';
 
 import EditListingDeliveryForm from './EditListingDeliveryForm';
 import css from './EditListingDeliveryPanel.module.css';
 
-const addressFromUser = currentUser =>
-  currentUser?.attributes?.profile?.protectedData?.shippingAddress || {};
-
 const getInitialValues = props => {
   const { listing, currentUser } = props;
   const publicData = listing?.attributes?.publicData || {};
   const parcel = getParcelInitialValues(publicData);
-  const address = addressFromUser(currentUser);
+  const address = getProfileShippingAddress(currentUser);
   return {
     ...parcel,
     name: address.name || '',
@@ -80,64 +78,66 @@ const EditListingDeliveryPanel = props => {
       <H3 as="h1">
         <FormattedMessage id={panelHeadingProps.id} values={{ ...panelHeadingProps.values }} />
       </H3>
-      <EditListingDeliveryForm
-        className={css.form}
-        initialValues={getInitialValues(props)}
-        onSubmit={values => {
-          const {
-            name,
-            phone,
-            street1,
-            streetNo,
-            city,
-            state,
-            zip,
-            country,
-            length,
-            width,
-            height,
-            weight,
-            weight_unit,
-            dimension_unit,
-          } = values;
+      {currentUser?.id ? (
+        <EditListingDeliveryForm
+          className={css.form}
+          initialValues={getInitialValues(props)}
+          onSubmit={values => {
+            const {
+              name,
+              phone,
+              street1,
+              streetNo,
+              city,
+              state,
+              zip,
+              country,
+              length,
+              width,
+              height,
+              weight,
+              weight_unit,
+              dimension_unit,
+            } = values;
 
-          const shippingAddress = {
-            name,
-            phone,
-            street1,
-            streetNo,
-            city,
-            state,
-            zip,
-            country: country || 'US',
-          };
+            const shippingAddress = {
+              name,
+              phone,
+              street1,
+              streetNo,
+              city,
+              state,
+              zip,
+              country: country || 'US',
+            };
 
-          const updateValues = {
-            publicData: {
-              shippingEnabled: true,
-              pickupEnabled: false,
-              length: Number(length),
-              width: Number(width),
-              height: Number(height),
-              weight: Number(weight),
-              weight_unit: weight_unit || 'lb',
-              dimension_unit: dimension_unit || 'in',
-            },
-          };
+            const updateValues = {
+              publicData: {
+                shippingEnabled: true,
+                pickupEnabled: false,
+                length: Number(length),
+                width: Number(width),
+                height: Number(height),
+                weight: Number(weight),
+                weight_unit: weight_unit || 'lb',
+                dimension_unit: dimension_unit || 'in',
+              },
+            };
 
-          const profilePromise = onUpdateProfile
-            ? onUpdateProfile({ protectedData: { shippingAddress } })
-            : Promise.resolve();
+            const profilePromise = onUpdateProfile
+              ? onUpdateProfile({ protectedData: { shippingAddress } })
+              : Promise.resolve();
 
-          return profilePromise.then(() => onSubmit(updateValues));
-        }}
-        saveActionMsg={submitButtonText}
-        disabled={disabled}
-        ready={ready}
-        updated={panelUpdated}
-        updateInProgress={updateInProgress}
-        fetchErrors={errors}
-      />
+            return profilePromise.then(() => onSubmit(updateValues));
+          }}
+          saveActionMsg={submitButtonText}
+          disabled={disabled}
+          ready={ready}
+          updated={panelUpdated}
+          updateInProgress={updateInProgress}
+          fetchErrors={errors}
+        />
+      ) : null}
     </main>
   );
 };

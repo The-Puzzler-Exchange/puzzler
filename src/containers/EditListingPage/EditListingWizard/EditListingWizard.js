@@ -39,6 +39,10 @@ import { ensureCurrentUser, ensureListing } from '../../../util/data';
 import { getDisplayAccountType } from '../../../util/stripeConnect';
 import { hasCompleteParcel } from '../../../util/parcel';
 import {
+  getProfileShippingAddress,
+  isCompleteShippingAddress,
+} from '../../../util/shippingAddress';
+import {
   INQUIRY_PROCESS_NAME,
   resolveLatestProcessName,
 } from '../../../transactions/transaction';
@@ -494,14 +498,8 @@ class EditListingWizard extends Component {
       return;
     }
 
-    const shipFrom = currentUser?.attributes?.profile?.protectedData?.shippingAddress;
-    const hasShipFrom =
-      shipFrom?.name &&
-      shipFrom?.street1 &&
-      shipFrom?.city &&
-      shipFrom?.state &&
-      shipFrom?.zip &&
-      shipFrom?.phone;
+    const shipFrom = getProfileShippingAddress(currentUser);
+    const hasShipFrom = isCompleteShippingAddress(shipFrom);
     if (!hasShipFrom || !hasCompleteParcel(listing?.attributes?.publicData)) {
       this.setState({ missingShippingDetails: true });
       return;
