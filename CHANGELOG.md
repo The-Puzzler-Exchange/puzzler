@@ -14,8 +14,24 @@ way to update this template, but currently, we follow a pattern:
 
 ## Upcoming version 2026-XX-XX
 
+- [fix] Restore comments to transaction process. [#927](https://github.com/sharetribe/web-template/pull/927)
+- [fix] user.duck / fetchCurrentUser: Don't treat login-as token expiration as a bug. In addition,
+  fetchFeaturedListings was also sending unnecessary Sentry errors.
+  [#926](https://github.com/sharetribe/web-template/pull/926)
+- [fix] Harden user.duck:
+
+  - Safe counts for saleNotificationsCount and orderNotificationsCount
+  - No unhandled rejection when fetching notifications, hasOrders and hasListings info.
+
+  [#925](https://github.com/sharetribe/web-template/pull/925)
+
+- [add] Add new translations and update existing ones.
+  [#924](https://github.com/sharetribe/web-template/pull/924)
+- [fix] Updates to transaction processes.
+  [#923](https://github.com/sharetribe/web-template/pull/923)
 - [fix] Fix to transaction process. [#922](https://github.com/sharetribe/web-template/pull/922)
-- [fix] Fixes to Marketplace and Email texts. [#921](https://github.com/sharetribe/web-template/pull/921)
+- [fix] Fixes to Marketplace and Email texts.
+  [#921](https://github.com/sharetribe/web-template/pull/921)
 
 ## [v12.3.0] 2026-08-31
 
