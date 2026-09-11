@@ -17,6 +17,15 @@ export const publishableKey = process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY;
  */
 export const subscriptionPaymentLink = process.env.REACT_APP_STRIPE_SUBSCRIPTION_PAYMENT_LINK;
 
+/**
+ * Price of a single exchange credit, in currency subunits (e.g. 1599 = $15.99).
+ *
+ * NOTE: the server reads the same environment variables when it creates the Stripe
+ * Checkout session, so the price shown here is the price that is charged.
+ */
+export const creditPriceInSubunits = Number(process.env.REACT_APP_CREDIT_PRICE_IN_SUBUNITS) || 1599;
+export const creditCurrency = process.env.REACT_APP_CREDIT_CURRENCY || 'USD';
+
 // A maximum number of days forwards during which a booking can be made.
 // This is limited due to Stripe holding funds up to 90 days from the
 // moment they are charged. However, US accounts can hold funds up to 2 years.

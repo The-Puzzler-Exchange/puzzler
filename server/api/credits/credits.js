@@ -208,10 +208,36 @@ const awardCreditForCompletedExchange = async (providerId, transactionId, custom
   };
 };
 
+/**
+ * Award credits that the member has paid for. The entry is keyed by the Stripe checkout
+ * session, so a redelivered webhook never awards the same purchase twice.
+ *
+ * @param {string} userId Marketplace user id
+ * @param {string} checkoutSessionId Stripe checkout session id
+ * @param {number} [quantity] Number of credits bought
+ * @returns {Promise<Object>} { awarded, balance, alreadyAwarded }
+ */
+const awardPurchasedCredits = async (userId, checkoutSessionId, quantity = 1) => {
+  const result = await applyCreditEntry(userId, {
+    entryId: `purchase-${checkoutSessionId}`,
+    amount: quantity,
+    type: 'purchase',
+    description: 'Credit purchase',
+    checkoutSessionId,
+  });
+
+  return {
+    awarded: result.applied,
+    balance: result.balance,
+    alreadyAwarded: !!result.alreadyApplied,
+  };
+};
+
 module.exports = {
   fetchCredits,
   awardSignupPromo,
   spendCreditForExchange,
   returnCreditForExchange,
   awardCreditForCompletedExchange,
+  awardPurchasedCredits,
 };

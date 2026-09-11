@@ -7,16 +7,28 @@ import { useConfiguration } from '../../context/configurationContext';
 import { FormattedMessage, useIntl } from '../../util/reactIntl';
 import { propTypes } from '../../util/types';
 import { showCreateListingLinkForUser } from '../../util/userHelpers';
-import { fetchCredits } from '../../util/api';
+import { formatMoney } from '../../util/currency';
+import { types as sdkTypes } from '../../util/sdkLoader';
+import { createCreditCheckoutSession, fetchCredits } from '../../util/api';
 
 import { isScrollingDisabled } from '../../ducks/ui.duck';
 
-import { H3, H4, IconSpinner, Page, UserNav, LayoutSideNavigation } from '../../components';
+import {
+  H3,
+  H4,
+  IconSpinner,
+  Page,
+  PrimaryButton,
+  UserNav,
+  LayoutSideNavigation,
+} from '../../components';
 
 import TopbarContainer from '../TopbarContainer/TopbarContainer';
 import FooterContainer from '../FooterContainer/FooterContainer';
 
 import css from './ManageCreditsPage.module.css';
+
+const { Money } = sdkTypes;
 
 /**
  * The manage credits page.
@@ -34,6 +46,8 @@ export const ManageCreditsPageComponent = props => {
   const [credits, setCredits] = useState(null);
   const [fetchInProgress, setFetchInProgress] = useState(true);
   const [fetchError, setFetchError] = useState(null);
+  const [purchaseInProgress, setPurchaseInProgress] = useState(false);
+  const [purchaseError, setPurchaseError] = useState(null);
   const { currentUser, scrollingDisabled } = props;
 
   useEffect(() => {
@@ -59,7 +73,32 @@ export const ManageCreditsPageComponent = props => {
     };
   }, []);
 
+  // The member is redirected to Stripe, and back to this page once they are done.
+  // The bought credit is awarded by the Stripe webhook, so the balance may land here a
+  // moment after the member does.
+  const handlePurchaseCredit = () => {
+    setPurchaseInProgress(true);
+    setPurchaseError(null);
+
+    return createCreditCheckoutSession()
+      .then(response => {
+        if (response?.url && typeof window !== 'undefined') {
+          window.location.href = response.url;
+        } else {
+          setPurchaseInProgress(false);
+        }
+      })
+      .catch(e => {
+        setPurchaseInProgress(false);
+        setPurchaseError(e);
+      });
+  };
+
   const title = intl.formatMessage({ id: 'ManageCreditsPage.title' });
+  const creditPrice = formatMoney(
+    intl,
+    new Money(config.stripe.creditPriceInSubunits, config.stripe.creditCurrency)
+  );
 
   const showManageListingsLink = showCreateListingLinkForUser(config, currentUser);
   const accountSettingsNavProps = {
@@ -116,6 +155,25 @@ export const ManageCreditsPageComponent = props => {
                   />
                 </span>
               </div>
+
+              {purchaseError ? (
+                <p className={css.error}>
+                  <FormattedMessage id="ManageCreditsPage.purchaseFailed" />
+                </p>
+              ) : null}
+
+              <PrimaryButton
+                className={css.purchaseButton}
+                type="button"
+                inProgress={purchaseInProgress}
+                disabled={purchaseInProgress}
+                onClick={handlePurchaseCredit}
+              >
+                <FormattedMessage
+                  id="ManageCreditsPage.purchaseButton"
+                  values={{ price: creditPrice }}
+                />
+              </PrimaryButton>
 
               <H4 as="h2" className={css.historySubtitle}>
                 <FormattedMessage id="ManageCreditsPage.historySubtitle" />

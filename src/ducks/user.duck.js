@@ -3,7 +3,7 @@ import { util as sdkUtil } from '../util/sdkLoader';
 import { denormalisedResponseEntities, ensureOwnListing } from '../util/data';
 import * as log from '../util/log';
 import { LISTING_STATE_DRAFT } from '../util/types';
-import { storableError } from '../util/errors';
+import { isForbiddenError, storableError } from '../util/errors';
 import { isUserAuthorized } from '../util/userHelpers';
 import {
   getStatesNeedingProviderAttention,
@@ -71,7 +71,9 @@ export const fetchCurrentUserHasListingsThunk = createAsyncThunk(
 
 // Backward compatible wrapper for the thunk
 export const fetchCurrentUserHasListings = () => (dispatch, getState, sdk) => {
-  return dispatch(fetchCurrentUserHasListingsThunk()).unwrap();
+  return dispatch(fetchCurrentUserHasListingsThunk())
+    .unwrap()
+    .catch(() => {});
 };
 
 ///////////////////////////////////////////////////////////
@@ -105,7 +107,9 @@ export const fetchCurrentUserHasOrdersThunk = createAsyncThunk(
 
 // Backward compatible wrapper for the thunk
 export const fetchCurrentUserHasOrders = () => (dispatch, getState, sdk) => {
-  return dispatch(fetchCurrentUserHasOrdersThunk()).unwrap();
+  return dispatch(fetchCurrentUserHasOrdersThunk())
+    .unwrap()
+    .catch(() => {});
 };
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -137,8 +141,8 @@ const fetchCurrentUserNotificationsPayloadCreator = (_, { extra: sdk, rejectWith
     sdk.transactions.query(paramsForOrders),
   ])
     .then(([sales, orders]) => {
-      const saleNotificationsCount = sales.data.data.length;
-      const orderNotificationsCount = orders.data.data.length;
+      const saleNotificationsCount = sales?.data?.data?.length ?? 0;
+      const orderNotificationsCount = orders?.data?.data?.length ?? 0;
       return { saleNotificationsCount, orderNotificationsCount };
     })
     .catch(e => rejectWithValue(storableError(e)));
@@ -151,7 +155,9 @@ export const fetchCurrentUserNotificationsThunk = createAsyncThunk(
 
 // Backward compatible wrapper for the thunk
 export const fetchCurrentUserNotifications = () => (dispatch, getState, sdk) => {
-  return dispatch(fetchCurrentUserNotificationsThunk()).unwrap();
+  return dispatch(fetchCurrentUserNotificationsThunk())
+    .unwrap()
+    .catch(() => {});
 };
 
 const fetchCurrentUserPayloadCreator = (options, thunkAPI) => {
@@ -238,9 +244,26 @@ const fetchCurrentUserPayloadCreator = (options, thunkAPI) => {
       return currentUser;
     })
     .catch(e => {
+      const wasLoggedInAs = getState().auth.isLoggedInAs;
+      // Login-as tokens expire after ~30 min with no refresh token; expired /
+      // missing refresh tokens for normal users produce the same
+      // 401 → (SDK refresh/anon retry) → 403 pattern. The app sees 403 after the
+      // SDK retries with an anon token. Treat as session end, not an app bug.
+      const isExpectedSessionEnd = isForbiddenError(e);
+
       // Make sure auth info is up to date
       dispatch(authInfo());
-      log.error(e, 'fetch-current-user-failed');
+
+      if (isExpectedSessionEnd) {
+        dispatch(clearCurrentUser());
+        log.clearUserId();
+        log.error(e, 'fetch-current-user-failed', { wasLoggedInAs }, { skipSentry: true });
+        // Resolve as logged-out instead of rejecting, so Topbar does not show
+        // the generic network error for an expected session expiry.
+        return null;
+      }
+
+      log.error(e, 'fetch-current-user-failed', { wasLoggedInAs });
       return rejectWithValue(storableError(e));
     });
 };

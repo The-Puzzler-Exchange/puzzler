@@ -36,7 +36,13 @@ export const getStateDataForPurchaseProcess = (txInfo, processInfo) => {
       const requestAfterInquiry = transitions.REQUEST_PAYMENT_AFTER_INQUIRY;
       const hasCorrectNextTransition = transitionNames.includes(requestAfterInquiry);
       const showOrderPanel = !isProviderBanned && hasCorrectNextTransition;
-      return { processName, processState, showOrderPanel, showDetailCardHeadings: true };
+      return {
+        processName,
+        processState,
+        showOrderPanel,
+        showDetailCardHeadings: true,
+        showBreakDown: false,
+      };
     })
     .cond([states.INQUIRY, PROVIDER], () => {
       return { processName, processState, showDetailCardHeadings: true, showBreakDown: false };
@@ -48,6 +54,7 @@ export const getStateDataForPurchaseProcess = (txInfo, processInfo) => {
         showDetailCardHeadings: true,
         showActionButtons: true,
         showExtraInfo: true,
+        showBreakDown: false,
         primaryButtonProps: actionButtonProps(transitions.MARK_RECEIVED_FROM_PURCHASED, CUSTOMER),
       };
     })
@@ -74,6 +81,7 @@ export const getStateDataForPurchaseProcess = (txInfo, processInfo) => {
         showDetailCardHeadings: true,
         showDispute: true,
         showActionButtons: true,
+        showBreakDown: false,
         primaryButtonProps: actionButtonProps(transitions.MARK_RECEIVED, CUSTOMER),
       };
     })
@@ -84,8 +92,7 @@ export const getStateDataForPurchaseProcess = (txInfo, processInfo) => {
         showDetailCardHeadings: true,
         showReviewAsFirstLink: true,
         showActionButtons: true,
-        // This state is resolved for both roles: hide the breakdown from the provider.
-        showBreakDown: isCustomer,
+        showBreakDown: false,
         primaryButtonProps: leaveReviewProps,
       };
     })
@@ -96,6 +103,7 @@ export const getStateDataForPurchaseProcess = (txInfo, processInfo) => {
         showDetailCardHeadings: true,
         showReviewAsSecondLink: true,
         showActionButtons: true,
+        showBreakDown: false,
         primaryButtonProps: leaveReviewProps,
       };
     })
@@ -116,12 +124,12 @@ export const getStateDataForPurchaseProcess = (txInfo, processInfo) => {
         processState,
         showDetailCardHeadings: true,
         showReviews: true,
-        showBreakDown: isCustomer,
+        showBreakDown: false,
       };
     })
     .default(() => {
       // Default values for other states
-      return { processName, processState, showDetailCardHeadings: true, showBreakDown: isCustomer };
+      return { processName, processState, showDetailCardHeadings: true, showBreakDown: false };
     })
     .resolve();
 };
