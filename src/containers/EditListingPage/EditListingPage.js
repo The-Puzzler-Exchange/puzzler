@@ -24,6 +24,7 @@ import { listingImageApiId, listingImageIdString } from './EditListingPage.share
 import { hasPermissionToPostListings, isUserAuthorized } from '../../util/userHelpers';
 import { getMarketplaceEntities } from '../../ducks/marketplaceData.duck';
 import { manageDisableScrolling, isScrollingDisabled } from '../../ducks/ui.duck';
+import { updateCurrentUserProfile } from '../../ducks/user.duck';
 import {
   stripeAccountClearError,
   getStripeConnectAccountLink,
@@ -161,6 +162,7 @@ export const EditListingPageComponent = props => {
     onDeleteAvailabilityException,
     onCreateListingDraft,
     onPublishListingDraft,
+    onUpdateProfile,
     onUpdateListing,
     onImageUpload,
     onRemoveListingImage,
@@ -315,6 +317,7 @@ export const EditListingPageComponent = props => {
           onUpdateListing={onUpdateListing}
           onCreateListingDraft={onCreateListingDraft}
           onPublishListingDraft={onPublishListingDraft}
+          onUpdateProfile={onUpdateProfile}
           onPayoutDetailsChange={onPayoutDetailsChange}
           onPayoutDetailsSubmit={onPayoutDetailsSubmit}
           onGetStripeConnectAccountLink={onGetStripeConnectAccountLink}
@@ -413,6 +416,7 @@ const mapDispatchToProps = dispatch => ({
   onUpdateListing: (tab, values, config) => dispatch(requestUpdateListing(tab, values, config)),
   onCreateListingDraft: (values, config) => dispatch(requestCreateListingDraft(values, config)),
   onPublishListingDraft: listingId => dispatch(requestPublishListingDraft(listingId)),
+  onUpdateProfile: params => dispatch(updateCurrentUserProfile(params)),
   onImageUpload: (data, listingImageConfig) =>
     dispatch(requestImageUpload(data, listingImageConfig)),
   onManageDisableScrolling: (componentId, disableScrolling) =>

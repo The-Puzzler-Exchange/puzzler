@@ -14541,6 +14541,13 @@ shell-quote@^1.8.4:
   resolved "https://registry.yarnpkg.com/shell-quote/-/shell-quote-1.9.0.tgz#e108b1a136586d5964edb3300016d4bedba0fe57"
   integrity sha512-Iov+JwFv/2HcTpcwNMKd8+IWNb8tboQJNQTkAY/LLVK7gGH9jy+LGkVqPxfekHl+yMmiqXszdGWXgkfml7hjqA==
 
+shippo@^2.15.0:
+  version "2.18.0"
+  resolved "https://registry.yarnpkg.com/shippo/-/shippo-2.18.0.tgz#2b04b3ac413cef9996fa2d06e5e392be375a5d4e"
+  integrity sha512-cTSwKlH8IFrtuaH3X9iOPy+kG32KVegKkDmj+ICrkl+rpUPeKz4MKdSNUAQnxoP66ezIfj7Tnfv2+3hluUxh8g==
+  dependencies:
+    zod "^3.25.65 || ^4.0.0"
+
 side-channel-list@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/side-channel-list/-/side-channel-list-1.0.0.tgz#10cb5984263115d3b7a0e336591e290a830af8ad"
@@ -16512,3 +16519,8 @@ yocto-queue@^0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/yocto-queue/-/yocto-queue-0.1.0.tgz#0294eb3dee05028d31ee1a5fa2c556a6aaf10a1b"
   integrity sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==
+
+"zod@^3.25.65 || ^4.0.0":
+  version "4.6.1"
+  resolved "https://registry.yarnpkg.com/zod/-/zod-4.6.1.tgz#08a340def8104c8381a7796af3806e4633025390"
+  integrity sha512-341aRWQsve0rvronKNTqZpjmzdbUDlFuzHaI/XLg/Ej82qffDJRRfBTCuv7+9q/rMjB6LSLyEBnW4InJeMtt/Q==

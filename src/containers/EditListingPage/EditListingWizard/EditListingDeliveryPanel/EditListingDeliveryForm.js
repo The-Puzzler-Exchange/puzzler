@@ -1,303 +1,231 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Form as FinalForm } from 'react-final-form';
 import classNames from 'classnames';
 
-// Import configs and util modules
-import appSettings from '../../../../config/settings';
 import { FormattedMessage, useIntl } from '../../../../util/reactIntl';
-import { propTypes } from '../../../../util/types';
-import { displayDeliveryPickup, displayDeliveryShipping } from '../../../../util/configHelpers';
-import {
-  autocompleteSearchRequired,
-  autocompletePlaceSelected,
-  composeValidators,
-  required,
-} from '../../../../util/validators';
+import { required, composeValidators, numberAtLeast } from '../../../../util/validators';
+import getUsaStates from '../../../../translations/usaStates';
 
-// Import shared components
 import {
   Form,
-  FieldLocationAutocompleteInput,
   Button,
-  FieldCurrencyInput,
   FieldTextInput,
-  FieldCheckbox,
+  FieldSelect,
+  FieldPhoneNumberInput,
 } from '../../../../components';
 
-// Import modules from this directory
 import css from './EditListingDeliveryForm.module.css';
 
-const identity = v => v;
+const US_COUNTRY = 'US';
 
 /**
- * The EditListingDeliveryForm component.
+ * Listing delivery form: US ship-from address and parcel size/weight.
  *
- * @component
- * @param {Object} props - The component props
- * @param {string} props.formId - The form ID
- * @param {string} [props.className] - Custom class that extends the default class for the root element
- * @param {Function} props.onSubmit - The submit function
- * @param {string} props.saveActionMsg - The save action message
- * @param {Object} props.selectedPlace - The selected place
- * @param {string} props.marketplaceCurrency - The marketplace currency
- * @param {boolean} props.hasStockInUse - Whether the stock is in use
- * @param {boolean} props.disabled - Whether the form is disabled
- * @param {boolean} props.ready - Whether the form is ready
- * @param {boolean} props.updated - Whether the form is updated
- * @param {boolean} props.updateInProgress - Whether the form is in progress
- * @param {Object} props.fetchErrors - The fetch errors
- * @param {propTypes.error} [props.fetchErrors.showListingsError] - The show listings error
- * @param {propTypes.error} [props.fetchErrors.updateListingError] - The update listing error
- * @param {boolean} props.autoFocus - Whether the form is auto focused
- * @returns {JSX.Element} The EditListingDeliveryForm component
+ * @param {Object} props
+ * @returns {JSX.Element}
  */
-export const EditListingDeliveryForm = props => (
-  <FinalForm
-    {...props}
-    render={formRenderProps => {
-      const {
-        formId = 'EditListingDeliveryForm',
-        form,
-        autoFocus,
-        className,
-        disabled,
-        ready,
-        handleSubmit,
-        pristine,
-        invalid,
-        listingTypeConfig,
-        marketplaceCurrency,
-        allowOrdersOfMultipleItems = false,
-        saveActionMsg,
-        updated,
-        updateInProgress,
-        fetchErrors,
-        values,
-      } = formRenderProps;
-      const intl = useIntl();
+const EditListingDeliveryForm = props => {
+  const intl = useIntl();
+  const {
+    formId = 'EditListingDeliveryForm',
+    className,
+    disabled,
+    ready,
+    saveActionMsg,
+    updated,
+    updateInProgress,
+    fetchErrors,
+    onSubmit,
+    initialValues,
+  } = props;
 
-      // This is a bug fix for Final Form.
-      // Without this, React will return a warning:
-      //   "Cannot update a component (`ForwardRef(Field)`)
-      //   while rendering a different component (`ForwardRef(Field)`)"
-      // This seems to happen because validation calls listeneres and
-      // that causes state to change inside final-form.
-      // https://github.com/final-form/react-final-form/issues/751
-      //
-      // TODO: it might not be worth the trouble to show these fields as disabled,
-      // if this fix causes trouble in future dependency updates.
-      const { pauseValidation, resumeValidation } = form;
-      pauseValidation(false);
-      useEffect(() => resumeValidation(), [values]);
+  const classes = classNames(css.root, className);
+  const submitReady = (updated && ready) || (!updateInProgress && ready);
+  const submitInProgress = updateInProgress;
+  const submitDisabled = updateInProgress;
+  const requireText = intl.formatMessage({ id: 'ShippingAddressForm.requireText' });
+  const requiredField = required(requireText);
+  const positiveNumber = composeValidators(
+    requiredField,
+    numberAtLeast(intl.formatMessage({ id: 'EditListingDeliveryForm.positiveNumber' }), 0.01)
+  );
+  const states = getUsaStates();
+  const { updateListingError, showListingsError } = fetchErrors || {};
 
-      const displayShipping = displayDeliveryShipping(listingTypeConfig);
-      const displayPickup = displayDeliveryPickup(listingTypeConfig);
-      const displayMultipleDelivery = displayShipping && displayPickup;
-      const shippingEnabled = displayShipping && values.deliveryOptions?.includes('shipping');
-      const pickupEnabled = displayPickup && values.deliveryOptions?.includes('pickup');
-
-      const addressRequiredMessage = intl.formatMessage({
-        id: 'EditListingDeliveryForm.addressRequired',
-      });
-      const addressNotRecognizedMessage = intl.formatMessage({
-        id: 'EditListingDeliveryForm.addressNotRecognized',
-      });
-
-      const optionalText = intl.formatMessage({
-        id: 'EditListingDeliveryForm.optionalText',
-      });
-
-      const { updateListingError, showListingsError } = fetchErrors || {};
-
-      const classes = classNames(css.root, className);
-      const submitReady = (updated && pristine) || ready;
-      const submitInProgress = updateInProgress;
-      const submitDisabled =
-        invalid || disabled || submitInProgress || (!shippingEnabled && !pickupEnabled);
-
-      const shippingLabel = intl.formatMessage({ id: 'EditListingDeliveryForm.shippingLabel' });
-      const pickupLabel = intl.formatMessage({ id: 'EditListingDeliveryForm.pickupLabel' });
-
-      const pickupClasses = classNames({
-        [css.deliveryOption]: displayMultipleDelivery,
-        [css.disabled]: !pickupEnabled,
-        [css.hidden]: !displayPickup,
-      });
-      const shippingClasses = classNames({
-        [css.deliveryOption]: displayMultipleDelivery,
-        [css.disabled]: !shippingEnabled,
-        [css.hidden]: !displayShipping,
-      });
-      const currencyConfig = appSettings.getCurrencyFormatting(marketplaceCurrency);
-
-      return (
-        <Form className={classes} onSubmit={handleSubmit}>
-          <FieldCheckbox
-            id={formId ? `${formId}.pickup` : 'pickup'}
-            className={classNames(css.deliveryCheckbox, { [css.hidden]: !displayMultipleDelivery })}
-            name="deliveryOptions"
-            label={pickupLabel}
-            value="pickup"
-          />
-          <div className={pickupClasses}>
+  return (
+    <FinalForm
+      initialValues={{ country: US_COUNTRY, ...initialValues }}
+      onSubmit={onSubmit}
+      render={formRenderProps => {
+        const { handleSubmit, invalid } = formRenderProps;
+        return (
+          <Form className={classes} onSubmit={handleSubmit}>
             {updateListingError ? (
               <p className={css.error}>
                 <FormattedMessage id="EditListingDeliveryForm.updateFailed" />
               </p>
             ) : null}
-
             {showListingsError ? (
               <p className={css.error}>
                 <FormattedMessage id="EditListingDeliveryForm.showListingFailed" />
               </p>
             ) : null}
 
-            <FieldLocationAutocompleteInput
-              disabled={!pickupEnabled}
-              rootClassName={css.input}
-              inputClassName={css.locationAutocompleteInput}
-              iconClassName={css.locationAutocompleteInputIcon}
-              predictionsClassName={css.predictionsRoot}
-              validClassName={css.validLocation}
-              autoFocus={autoFocus}
-              name="location"
-              id={`${formId}.location`}
-              label={intl.formatMessage({ id: 'EditListingDeliveryForm.address' })}
-              placeholder={intl.formatMessage({
-                id: 'EditListingDeliveryForm.addressPlaceholder',
-              })}
-              useDefaultPredictions={false}
-              format={identity}
-              valueFromForm={values.location}
-              validate={
-                pickupEnabled
-                  ? composeValidators(
-                      autocompleteSearchRequired(addressRequiredMessage),
-                      autocompletePlaceSelected(addressNotRecognizedMessage)
-                    )
-                  : () => {}
-              }
-              hideErrorMessage={!pickupEnabled}
-              // Whatever parameters are being used to calculate
-              // the validation function need to be combined in such
-              // a way that, when they change, this key prop
-              // changes, thus reregistering this field (and its
-              // validation function) with Final Form.
-              // See example: https://codesandbox.io/s/changing-field-level-validators-zc8ei
-              key={pickupEnabled ? 'locationValidation' : 'noLocationValidation'}
-            />
+            <h2 className={css.sectionHeading}>
+              <FormattedMessage id="EditListingDeliveryForm.shipFromHeading" />
+            </h2>
+            <p className={css.helper}>
+              <FormattedMessage id="EditListingDeliveryForm.shipFromHelper" />
+            </p>
 
-            <FieldTextInput
-              className={css.input}
-              type="text"
-              name="building"
-              id={formId ? `${formId}.building` : 'building'}
-              label={intl.formatMessage(
-                { id: 'EditListingDeliveryForm.building' },
-                { optionalText }
-              )}
-              placeholder={intl.formatMessage({
-                id: 'EditListingDeliveryForm.buildingPlaceholder',
-              })}
-              disabled={!pickupEnabled}
-            />
-          </div>
-
-          <FieldCheckbox
-            id={formId ? `${formId}.shipping` : 'shipping'}
-            className={classNames(css.deliveryCheckbox, { [css.hidden]: !displayMultipleDelivery })}
-            name="deliveryOptions"
-            label={shippingLabel}
-            value="shipping"
-          />
-
-          <div className={shippingClasses}>
-            <FieldCurrencyInput
-              id={
-                formId
-                  ? `${formId}.shippingPriceInSubunitsOneItem`
-                  : 'shippingPriceInSubunitsOneItem'
-              }
-              name="shippingPriceInSubunitsOneItem"
-              className={css.input}
-              label={intl.formatMessage({
-                id: 'EditListingDeliveryForm.shippingOneItemLabel',
-              })}
-              placeholder={intl.formatMessage({
-                id: 'EditListingDeliveryForm.shippingOneItemPlaceholder',
-              })}
-              currencyConfig={currencyConfig}
-              disabled={!shippingEnabled}
-              validate={
-                shippingEnabled
-                  ? required(
-                      intl.formatMessage({
-                        id: 'EditListingDeliveryForm.shippingOneItemRequired',
-                      })
-                    )
-                  : null
-              }
-              hideErrorMessage={!shippingEnabled}
-              // Whatever parameters are being used to calculate
-              // the validation function need to be combined in such
-              // a way that, when they change, this key prop
-              // changes, thus reregistering this field (and its
-              // validation function) with Final Form.
-              // See example: https://codesandbox.io/s/changing-field-level-validators-zc8ei
-              key={shippingEnabled ? 'oneItemValidation' : 'noOneItemValidation'}
-            />
-
-            {allowOrdersOfMultipleItems ? (
-              <FieldCurrencyInput
-                id={
-                  formId
-                    ? `${formId}.shippingPriceInSubunitsAdditionalItems`
-                    : 'shippingPriceInSubunitsAdditionalItems'
-                }
-                name="shippingPriceInSubunitsAdditionalItems"
-                className={css.input}
-                label={intl.formatMessage({
-                  id: 'EditListingDeliveryForm.shippingAdditionalItemsLabel',
-                })}
-                placeholder={intl.formatMessage({
-                  id: 'EditListingDeliveryForm.shippingAdditionalItemsPlaceholder',
-                })}
-                currencyConfig={currencyConfig}
-                disabled={!shippingEnabled}
-                validate={
-                  shippingEnabled
-                    ? required(
-                        intl.formatMessage({
-                          id: 'EditListingDeliveryForm.shippingAdditionalItemsRequired',
-                        })
-                      )
-                    : null
-                }
-                hideErrorMessage={!shippingEnabled}
-                // Whatever parameters are being used to calculate
-                // the validation function need to be combined in such
-                // a way that, when they change, this key prop
-                // changes, thus reregistering this field (and its
-                // validation function) with Final Form.
-                // See example: https://codesandbox.io/s/changing-field-level-validators-zc8ei
-                key={shippingEnabled ? 'additionalItemsValidation' : 'noAdditionalItemsValidation'}
+            <div className={css.formRow}>
+              <FieldTextInput
+                id={`${formId}.name`}
+                className={css.field}
+                type="text"
+                name="name"
+                label={intl.formatMessage({ id: 'ShippingAddressForm.nameLabel' })}
+                placeholder={intl.formatMessage({ id: 'ShippingAddressForm.namePlaceholder' })}
+                validate={requiredField}
               />
-            ) : null}
-          </div>
+              <FieldPhoneNumberInput
+                id={`${formId}.phone`}
+                className={css.field}
+                name="phone"
+                label={intl.formatMessage({ id: 'ShippingAddressForm.phoneLabel' })}
+                placeholder={intl.formatMessage({ id: 'ShippingAddressForm.phonePlaceholder' })}
+                validate={requiredField}
+              />
+            </div>
+            <FieldTextInput
+              id={`${formId}.street1`}
+              className={css.field}
+              type="text"
+              name="street1"
+              label={intl.formatMessage({ id: 'ShippingAddressForm.streetLabel' })}
+              placeholder={intl.formatMessage({ id: 'ShippingAddressForm.streetPlaceholder' })}
+              validate={requiredField}
+            />
+            <FieldTextInput
+              id={`${formId}.streetNo`}
+              className={css.field}
+              type="text"
+              name="streetNo"
+              label={intl.formatMessage({ id: 'ShippingAddressForm.aptLabel' })}
+              placeholder={intl.formatMessage({ id: 'ShippingAddressForm.aptPlaceholder' })}
+            />
+            <div className={css.formRow}>
+              <FieldTextInput
+                id={`${formId}.city`}
+                className={css.field}
+                type="text"
+                name="city"
+                label={intl.formatMessage({ id: 'ShippingAddressForm.cityLabel' })}
+                placeholder={intl.formatMessage({ id: 'ShippingAddressForm.cityPlaceholder' })}
+                validate={requiredField}
+              />
+              <FieldSelect
+                id={`${formId}.state`}
+                className={css.field}
+                name="state"
+                label={intl.formatMessage({ id: 'ShippingAddressForm.stateLabel' })}
+                validate={requiredField}
+              >
+                <option disabled value="">
+                  {intl.formatMessage({ id: 'ShippingAddressForm.statePlaceholder' })}
+                </option>
+                {states.map(state => (
+                  <option key={state.code} value={state.code}>
+                    {state.name}
+                  </option>
+                ))}
+              </FieldSelect>
+            </div>
+            <div className={css.formRow}>
+              <FieldTextInput
+                id={`${formId}.zip`}
+                className={css.field}
+                type="text"
+                name="zip"
+                label={intl.formatMessage({ id: 'ShippingAddressForm.zipLabel' })}
+                placeholder={intl.formatMessage({ id: 'ShippingAddressForm.zipPlaceholder' })}
+                validate={requiredField}
+              />
+              <FieldTextInput
+                id={`${formId}.country`}
+                className={css.field}
+                type="text"
+                name="country"
+                label={intl.formatMessage({ id: 'ShippingAddressForm.countryLabel' })}
+                readOnly
+              />
+            </div>
 
-          <Button
-            className={css.submitButton}
-            type="submit"
-            inProgress={submitInProgress}
-            disabled={submitDisabled}
-            ready={submitReady}
-          >
-            {saveActionMsg}
-          </Button>
-        </Form>
-      );
-    }}
-  />
-);
+            <h2 className={css.sectionHeading}>
+              <FormattedMessage id="EditListingDeliveryForm.parcelHeading" />
+            </h2>
+            <p className={css.helper}>
+              <FormattedMessage id="EditListingDeliveryForm.parcelHelper" />
+            </p>
+            <div className={css.formRow}>
+              <FieldTextInput
+                id={`${formId}.length`}
+                className={css.field}
+                type="number"
+                name="length"
+                min="0"
+                step="0.1"
+                label={intl.formatMessage({ id: 'EditListingDeliveryForm.lengthLabel' })}
+                validate={positiveNumber}
+              />
+              <FieldTextInput
+                id={`${formId}.width`}
+                className={css.field}
+                type="number"
+                name="width"
+                min="0"
+                step="0.1"
+                label={intl.formatMessage({ id: 'EditListingDeliveryForm.widthLabel' })}
+                validate={positiveNumber}
+              />
+            </div>
+            <div className={css.formRow}>
+              <FieldTextInput
+                id={`${formId}.height`}
+                className={css.field}
+                type="number"
+                name="height"
+                min="0"
+                step="0.1"
+                label={intl.formatMessage({ id: 'EditListingDeliveryForm.heightLabel' })}
+                validate={positiveNumber}
+              />
+              <FieldTextInput
+                id={`${formId}.weight`}
+                className={css.field}
+                type="number"
+                name="weight"
+                min="0"
+                step="0.1"
+                label={intl.formatMessage({ id: 'EditListingDeliveryForm.weightLabel' })}
+                validate={positiveNumber}
+              />
+            </div>
+
+            <Button
+              className={css.submitButton}
+              type="submit"
+              inProgress={submitInProgress}
+              disabled={invalid || disabled || submitDisabled}
+              ready={submitReady}
+            >
+              {saveActionMsg}
+            </Button>
+          </Form>
+        );
+      }}
+    />
+  );
+};
 
 export default EditListingDeliveryForm;

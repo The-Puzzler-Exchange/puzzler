@@ -1,7 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
 import { pick } from '../../util/common';
-import { initiatePrivileged, transitionPrivileged } from '../../util/api';
+import {
+  initiatePrivileged,
+  transitionPrivileged,
+  getShippingRates as getShippingRatesApi,
+} from '../../util/api';
 import { denormalisedResponseEntities } from '../../util/data';
 import { storableError } from '../../util/errors';
 import * as log from '../../util/log';
@@ -435,6 +439,21 @@ export const stripeCustomer = () => dispatch => {
   return dispatch(stripeCustomerThunk({}));
 };
 
+const getShippingRatesPayloadCreator = ({ listingId }, { rejectWithValue }) => {
+  return getShippingRatesApi(listingId)
+    .then(response => response.data)
+    .catch(e => rejectWithValue(storableError(e)));
+};
+
+export const getShippingRatesThunk = createAsyncThunk(
+  'CheckoutPage/getShippingRates',
+  getShippingRatesPayloadCreator
+);
+
+export const getShippingRates = listingId => dispatch => {
+  return dispatch(getShippingRatesThunk({ listingId }));
+};
+
 // ================ Slice ================ //
 
 const initialState = {
@@ -450,6 +469,9 @@ const initialState = {
   stripeCustomerFetchError: null,
   initiateInquiryInProgress: false,
   initiateInquiryError: null,
+  shipment: null,
+  getShippingRatesInProgress: false,
+  getShippingRatesError: null,
 };
 
 const checkoutPageSlice = createSlice({
@@ -522,6 +544,19 @@ const checkoutPageSlice = createSlice({
       .addCase(initiateInquiryThunk.rejected, (state, action) => {
         state.initiateInquiryInProgress = false;
         state.initiateInquiryError = action.payload;
+      })
+      .addCase(getShippingRatesThunk.pending, state => {
+        state.getShippingRatesInProgress = true;
+        state.getShippingRatesError = null;
+      })
+      .addCase(getShippingRatesThunk.fulfilled, (state, action) => {
+        state.getShippingRatesInProgress = false;
+        state.shipment = action.payload;
+      })
+      .addCase(getShippingRatesThunk.rejected, (state, action) => {
+        state.getShippingRatesInProgress = false;
+        state.getShippingRatesError = action.payload;
+        state.shipment = null;
       });
   },
 });

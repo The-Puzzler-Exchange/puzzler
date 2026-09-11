@@ -20,6 +20,8 @@ import { requireListingImage } from '../../util/configHelpers';
 import { getCurrentUserTypeRoles, hasPermissionToViewData } from '../../util/userHelpers.js';
 import { userDisplayNameAsString } from '../../util/data';
 import { isMobileSafari } from '../../util/userAgent';
+import { types as sdkTypes } from '../../util/sdkLoader';
+import { buyShippingLabel } from '../../util/api';
 
 import {
   INQUIRY_PROCESS_NAME,
@@ -86,8 +88,11 @@ import {
   clearUploadedFiles,
   selectFileUploads,
   downloadFile,
+  fetchTransaction,
 } from './TransactionPage.duck';
 import css from './TransactionPage.module.css';
+
+const { UUID } = sdkTypes;
 
 const MAX_MOBILE_SCREEN_WIDTH = 1023;
 const SEND_MESSAGE_FORM_ID = 'TransactionPanel.SendMessageForm';
@@ -379,6 +384,7 @@ export const TransactionPageComponent = props => {
     onDownloadFile,
     fileDownloads,
     fileUploadsDisabled,
+    onBuyShippingLabel,
     ...restOfProps
   } = props;
 
@@ -860,6 +866,8 @@ export const TransactionPageComponent = props => {
       showBookingLocation={showBookingLocation}
       hasViewingRights={hasViewingRights}
       showListingImage={showListingImage}
+      shippingLabelDetails={transaction?.attributes?.metadata?.shippingDetails}
+      onBuyShippingLabel={onBuyShippingLabel}
       sendMessageForm={
         showSendMessageForm ? (
           <SendMessageForm
@@ -1151,6 +1159,7 @@ export const TransactionPageComponent = props => {
 const TransactionPage = props => {
   const dispatch = useDispatch();
   const history = useHistory();
+  const config = useConfiguration();
 
   // State selectors
   const {
@@ -1238,6 +1247,13 @@ const TransactionPage = props => {
     (fileAttachmentId, isOwnFile) => dispatch(downloadFile(fileAttachmentId, isOwnFile)),
     [dispatch]
   );
+  const onBuyShippingLabel = useCallback(
+    transactionId =>
+      buyShippingLabel(transactionId).then(() =>
+        dispatch(fetchTransaction(new UUID(transactionId), props.transactionRole, config))
+      ),
+    [dispatch, props.transactionRole, config]
+  );
 
   return (
     <TransactionPageComponent
@@ -1278,6 +1294,7 @@ const TransactionPage = props => {
       onUploadFile={onUploadFile}
       onClearUploadedFiles={onClearUploadedFiles}
       onDownloadFile={onDownloadFile}
+      onBuyShippingLabel={onBuyShippingLabel}
       fileDownloads={fileDownloads}
       history={history}
     />

@@ -242,7 +242,11 @@ const EditListingWizardTab = props => {
     }
     case DELIVERY: {
       return (
-        <EditListingDeliveryPanel {...panelProps(DELIVERY)} marketplaceCurrency={config.currency} />
+        <EditListingDeliveryPanel
+          {...panelProps(DELIVERY)}
+          currentUser={props.currentUser}
+          onUpdateProfile={props.onUpdateProfile}
+        />
       );
     }
     case FILES: {

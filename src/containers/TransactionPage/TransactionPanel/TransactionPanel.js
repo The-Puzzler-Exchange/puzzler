@@ -130,6 +130,8 @@ export class TransactionPanelComponent extends Component {
       hasViewingRights,
       transactionFieldsComponent,
       sendMessageForm,
+      shippingLabelDetails,
+      onBuyShippingLabel,
     } = this.props;
 
     const hasTransitions = transitions.length > 0;
@@ -269,6 +271,11 @@ export class TransactionPanelComponent extends Component {
                   protectedData={protectedData}
                   listing={listing}
                   locale={config.localization.locale}
+                  shippingLabelDetails={shippingLabelDetails}
+                  isProvider={isProvider}
+                  isInquiry={isInquiryProcess}
+                  transactionId={this.props.transactionId}
+                  onBuyShippingLabel={onBuyShippingLabel}
                 />
                 <BookingLocationMaybe
                   className={css.deliveryInfoSection}

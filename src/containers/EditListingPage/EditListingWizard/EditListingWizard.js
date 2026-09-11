@@ -37,7 +37,11 @@ import {
 } from '../../../util/fieldHelpers';
 import { ensureCurrentUser, ensureListing } from '../../../util/data';
 import { getDisplayAccountType } from '../../../util/stripeConnect';
-import { INQUIRY_PROCESS_NAME, resolveLatestProcessName } from '../../../transactions/transaction';
+import { hasCompleteParcel } from '../../../util/parcel';
+import {
+  INQUIRY_PROCESS_NAME,
+  resolveLatestProcessName,
+} from '../../../transactions/transaction';
 
 // Import shared components
 import {
@@ -103,12 +107,7 @@ const tabsForListingType = (processName, listingTypeConfig) => {
   //         that it is clear to the user why the 'publish' button is disabled during verification
   const tabs = {
     ['default-booking']: [DETAILS, ...locationMaybe, PRICING, AVAILABILITY, ...styleOrPhotosTab],
-    ['default-purchase']: [
-      DETAILS,
-      // PRICING_AND_STOCK,
-      ...deliveryMaybe,
-      ...styleOrPhotosTab,
-    ],
+    ['default-purchase']: [DETAILS, DELIVERY, ...styleOrPhotosTab],
     ['default-negotiation']: [DETAILS, ...locationMaybe, ...pricingMaybe, ...styleOrPhotosTab],
     ['default-inquiry']: [DETAILS, ...locationMaybe, ...pricingMaybe, ...styleOrPhotosTab],
     ['default-download']: [DETAILS, ...locationMaybe, FILES, ...pricingMaybe, ...styleOrPhotosTab],
@@ -279,7 +278,7 @@ const tabCompleted = (tab, listing, config, options = {}) => {
     case PRICING_AND_STOCK:
       return !!price;
     case DELIVERY:
-      return !!deliveryOptionPicked;
+      return hasCompleteParcel(publicData);
     case FILES:
       return filesRequired && hasAttachedFiles;
     case LOCATION:
@@ -446,6 +445,7 @@ class EditListingWizard extends Component {
       showPayoutDetails: false,
       selectedListingType: null,
       mounted: false,
+      missingShippingDetails: false,
     };
     this.handleCreateFlowTabScrolling = this.handleCreateFlowTabScrolling.bind(this);
     this.handlePublishListing = this.handlePublishListing.bind(this);
@@ -477,7 +477,7 @@ class EditListingWizard extends Component {
       fileUploadsDisabled,
       allFilesUploadedAndVerified,
     } = this.props;
-    const processName = listing?.attributes?.publicData?.transactionProcessAlias.split('/')[0];
+    const processName = listing?.attributes?.publicData?.transactionProcessAlias?.split('/')[0];
     const isInquiryProcess = processName === INQUIRY_PROCESS_NAME;
 
     const listingTypeConfig = getListingTypeConfig(listing, this.state.selectedListingType, config);
@@ -493,6 +493,20 @@ class EditListingWizard extends Component {
     if (filesRequired && (fileUploadsDisabled || !allFilesUploadedAndVerified)) {
       return;
     }
+
+    const shipFrom = currentUser?.attributes?.profile?.protectedData?.shippingAddress;
+    const hasShipFrom =
+      shipFrom?.name &&
+      shipFrom?.street1 &&
+      shipFrom?.city &&
+      shipFrom?.state &&
+      shipFrom?.zip &&
+      shipFrom?.phone;
+    if (!hasShipFrom || !hasCompleteParcel(listing?.attributes?.publicData)) {
+      this.setState({ missingShippingDetails: true });
+      return;
+    }
+    this.setState({ missingShippingDetails: false });
 
     const stripeConnected = !!currentUser?.stripeAccount?.id;
     const stripeAccountData = stripeConnected ? getStripeAccountData(stripeAccount) : null;
@@ -543,6 +557,7 @@ class EditListingWizard extends Component {
       stripeAccountError,
       stripeAccountLinkError,
       currentUser,
+      onUpdateProfile,
       config,
       routeConfiguration,
       authScopes,
@@ -710,6 +725,11 @@ class EditListingWizard extends Component {
 
     return (
       <div className={classes}>
+        {this.state.missingShippingDetails ? (
+          <p className={css.missingShippingDetails}>
+            <FormattedMessage id="EditListingWizard.missingShippingDetails" />
+          </p>
+        ) : null}
         <Tabs
           rootClassName={css.tabsContainer}
           navRootClassName={css.nav}
@@ -741,6 +761,8 @@ class EditListingWizard extends Component {
                 errors={errors}
                 handleCreateFlowTabScrolling={this.handleCreateFlowTabScrolling}
                 handlePublishListing={this.handlePublishListing}
+                currentUser={currentUser}
+                onUpdateProfile={onUpdateProfile}
                 fetchInProgress={fetchInProgress}
                 onListingTypeChange={selectedListingType => this.setState({ selectedListingType })}
                 onManageDisableScrolling={onManageDisableScrolling}

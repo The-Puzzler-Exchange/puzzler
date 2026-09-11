@@ -1,0 +1,37 @@
+@import '../../styles/customMediaQueries.css';
+
+.root {
+  display: flex;
+  flex-direction: column;
+}
+
+.formRow {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  flex-grow: 1;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+
+.field {
+  width: 100%;
+  margin-top: 24px;
+
+  @media (--viewportMedium) {
+    width: calc(50% - 12px);
+  }
+}
+
+.fullField {
+  width: 100%;
+}
+
+.submitButton {
+  margin-top: 24px;
+  margin-bottom: 24px;
+}
+
+.error {
+  color: var(--colorFail);
+}

@@ -88,3 +88,34 @@
     margin-top: 100px;
   }
 }
+
+.formRow {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.field {
+  width: 100%;
+  margin-top: 24px;
+
+  @media (--viewportMedium) {
+    width: calc(50% - 12px);
+  }
+}
+
+.sectionHeading {
+  margin-top: 24px;
+  margin-bottom: 0;
+
+  @media (--viewportMedium) {
+    margin-top: 32px;
+  }
+}
+
+.helper {
+  margin-top: 6px;
+  margin-bottom: 0;
+  color: var(--colorGrey700);
+}

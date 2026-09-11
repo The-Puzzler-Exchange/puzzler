@@ -104,6 +104,7 @@ const OneTimePaymentWithCardElement = props => {
     label,
     intl,
     marketplaceName,
+    showSaveCard = true,
   } = props;
   const labelText =
     label || intl.formatMessage({ id: 'StripePaymentForm.saveAfterOnetimePayment' });
@@ -114,23 +115,25 @@ const OneTimePaymentWithCardElement = props => {
       </label>
       <div className={cardClasses} id={`${formId}-card`} ref={handleStripeElementRef} />
       {hasCardError ? <span className={css.error}>{error}</span> : null}
-      <div className={css.saveForLaterUse}>
-        <FieldCheckbox
-          className={css.saveForLaterUseCheckbox}
-          textClassName={css.saveForLaterUseLabel}
-          id="saveAfterOnetimePayment"
-          name="saveAfterOnetimePayment"
-          label={labelText}
-          value="saveAfterOnetimePayment"
-          useSuccessColor
-        />
-        <span className={css.saveForLaterUseLegalInfo}>
-          <FormattedMessage
-            id="StripePaymentForm.saveforLaterUseLegalInfo"
-            values={{ marketplaceName }}
+      {showSaveCard ? (
+        <div className={css.saveForLaterUse}>
+          <FieldCheckbox
+            className={css.saveForLaterUseCheckbox}
+            textClassName={css.saveForLaterUseLabel}
+            id="saveAfterOnetimePayment"
+            name="saveAfterOnetimePayment"
+            label={labelText}
+            value="saveAfterOnetimePayment"
+            useSuccessColor
           />
-        </span>
-      </div>
+          <span className={css.saveForLaterUseLegalInfo}>
+            <FormattedMessage
+              id="StripePaymentForm.saveforLaterUseLegalInfo"
+              values={{ marketplaceName }}
+            />
+          </span>
+        </div>
+      ) : null}
     </React.Fragment>
   );
 };
@@ -458,11 +461,8 @@ class StripePaymentForm extends Component {
       hasHandledCardPayment
     );
 
-    // NOTE: onetimePaymentNeedsAttention is left out of the check, since the card element
-    // is not rendered and its value can never become valid.
-    // if (inProgress || onetimePaymentNeedsAttention) {
-    if (inProgress) {
-      // Already submitting
+    if (inProgress || onetimePaymentNeedsAttention) {
+      // Already submitting or the card is not complete
       return;
     }
 
@@ -510,6 +510,8 @@ class StripePaymentForm extends Component {
       transactionFieldConfigs = [],
       showTransactionFields,
       values,
+      showSavedCards = true,
+      showSaveCard = true,
     } = formRenderProps;
 
     this.finalFormAPI = formApi;
@@ -523,7 +525,7 @@ class StripePaymentForm extends Component {
     const billingDetailsNeeded = !(hasHandledCardPayment || confirmPaymentError);
 
     const { cardValueValid, paymentMethod } = this.state;
-    const hasDefaultPaymentMethod = ensuredDefaultPaymentMethod.id;
+    const hasDefaultPaymentMethod = showSavedCards && ensuredDefaultPaymentMethod.id;
     const selectedPaymentMethod = getPaymentMethod(paymentMethod, hasDefaultPaymentMethod);
     const { onetimePaymentNeedsAttention, showOnetimePaymentFields } = checkOnetimePaymentFields(
       cardValueValid,
@@ -532,10 +534,7 @@ class StripePaymentForm extends Component {
       hasHandledCardPayment
     );
 
-    // NOTE: onetimePaymentNeedsAttention is left out of the check, since the card
-    // element is not rendered and its value can never become valid.
-    // const submitDisabled = invalid || onetimePaymentNeedsAttention || submitInProgress;
-    const submitDisabled = invalid || submitInProgress;
+    const submitDisabled = invalid || onetimePaymentNeedsAttention || submitInProgress;
     const hasCardError = this.state.error && !submitInProgress;
     const hasPaymentErrors = confirmCardPaymentError || confirmPaymentError;
     const classes = classNames(rootClassName || css.root, className);
@@ -622,8 +621,6 @@ class StripePaymentForm extends Component {
           intl={intl}
         />
 
-        {/* Card details and billing details are not asked, since exchanges are paid
-            with credits instead of money.
         {billingDetailsNeeded && !loadingData ? (
           <React.Fragment>
             {hasDefaultPaymentMethod ? (
@@ -642,7 +639,7 @@ class StripePaymentForm extends Component {
             ) : (
               <React.Fragment>
                 <Heading as="h3" rootClassName={css.heading}>
-                  <FormattedMessage id="StripePaymentForm.paymentHeading" />
+                  <FormattedMessage id="StripePaymentForm.shippingPaymentHeading" />
                 </Heading>
                 <OneTimePaymentWithCardElement
                   cardClasses={cardClasses}
@@ -652,6 +649,7 @@ class StripePaymentForm extends Component {
                   error={this.state.error}
                   intl={intl}
                   marketplaceName={marketplaceName}
+                  showSaveCard={showSaveCard}
                 />
               </React.Fragment>
             )}
@@ -696,7 +694,6 @@ class StripePaymentForm extends Component {
             <IconSpinner />
           </p>
         ) : null}
-        */}
 
         {initiateOrderError ? (
           <span className={css.errorMessage}>{initiateOrderError.message}</span>

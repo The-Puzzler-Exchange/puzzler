@@ -73,6 +73,8 @@ const defaultDirectives = {
     'sentry.io',
     '*.sentry.io',
     '*.stripe.com',
+    '*.goshippo.com',
+    'api.goshippo.com',
   ],
   fontSrc: [self, data, 'assets-sharetribecom.sharetribe.com', 'fonts.gstatic.com'],
   formAction: [self],
@@ -117,6 +119,10 @@ const defaultDirectives = {
 
     // Stripe
     '*.stripe.com',
+
+    // Shippo carrier images
+    '*.goshippo.com',
+    '*.shippo.com',
   ],
   scriptSrc: [
     self,

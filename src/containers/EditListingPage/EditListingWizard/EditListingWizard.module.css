@@ -95,6 +95,16 @@
   composes: marketplaceModalParagraphStyles from global;
 }
 
+.missingShippingDetails {
+  color: var(--colorFail);
+  margin: 0 24px 16px 24px;
+
+  @media (--viewportLarge) {
+    margin: 72px 0 0 0;
+    max-width: 600px;
+  }
+}
+
 .customFieldMultiEnum {
   margin-bottom: 24px;
 

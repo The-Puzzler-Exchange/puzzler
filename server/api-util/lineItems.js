@@ -1,7 +1,6 @@
 const {
   calculateQuantityFromDates,
   calculateQuantityFromHours,
-  calculateShippingFee,
   getProviderCommissionMaybe,
   getCustomerCommissionMaybe,
 } = require('./lineItemHelpers');
@@ -16,38 +15,9 @@ const { Money } = types;
  * @param {*} currency should point to the currency of listing's price.
  */
 const getItemQuantityAndLineItems = (orderData, publicData, currency) => {
-  // Check delivery method and shipping prices
+  // Shipping is charged on the platform Stripe account, not as a Sharetribe line item.
   const quantity = orderData ? orderData.stockReservationQuantity : null;
-  const deliveryMethod = orderData && orderData.deliveryMethod;
-  const isShipping = deliveryMethod === 'shipping';
-  const isPickup = deliveryMethod === 'pickup';
-  const { shippingPriceInSubunitsOneItem, shippingPriceInSubunitsAdditionalItems } =
-    publicData || {};
-
-  // Calculate shipping fee if applicable
-  const shippingFee = isShipping
-    ? calculateShippingFee(
-        shippingPriceInSubunitsOneItem,
-        shippingPriceInSubunitsAdditionalItems,
-        currency,
-        quantity
-      )
-    : null;
-
-  // Add line-item for given delivery method.
-  // Note: by default, pickup considered as free and, therefore, we don't add pickup fee line-item
-  const deliveryLineItem = !!shippingFee
-    ? [
-        {
-          code: 'line-item/shipping-fee',
-          unitPrice: shippingFee,
-          quantity: 1,
-          includeFor: ['customer', 'provider'],
-        },
-      ]
-    : [];
-
-  return { quantity, extraLineItems: deliveryLineItem };
+  return { quantity, extraLineItems: [] };
 };
 
 const getOfferQuantityAndLineItems = orderData => {

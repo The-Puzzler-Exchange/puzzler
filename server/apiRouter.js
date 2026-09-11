@@ -23,10 +23,16 @@ const { authenticateFacebook, authenticateFacebookCallback } = require('./api/au
 const { authenticateGoogle, authenticateGoogleCallback } = require('./api/auth/google');
 const stripeRouter = require('./api/stripe');
 const creditsRouter = require('./api/credits');
+const addressRouter = require('./api/address');
+const shippingRouter = require('./api/shipping');
+const shippoWebhook = require('./api/shippo-webhook');
 
 const router = express.Router();
 
 // ================ API router middleware: ================ //
+
+// Shippo webhook is JSON, not Transit. Register it before the Transit parser.
+router.post('/shippo-webhook', bodyParser.json(), shippoWebhook);
 
 // Parse Transit body first to a string
 router.use(
@@ -89,5 +95,11 @@ router.use('/stripe', stripeRouter);
 
 // credits
 router.use('/credits', creditsRouter);
+
+// shipping addresses and Shippo rates
+router.use('/address', addressRouter);
+
+// platform Stripe shipping charge and labels
+router.use('/shipping', shippingRouter);
 
 module.exports = router;

@@ -2,7 +2,7 @@
 import { findRouteByRouteName } from '../../util/routes';
 import { ensureStripeCustomer, ensureTransaction } from '../../util/data';
 import { formatMoney } from '../../util/currency';
-import { spendCreditForExchange } from '../../util/api';
+import { spendCreditForExchange, buyShippingLabel } from '../../util/api';
 import { NEGOTIATION_PROCESS_NAME, resolveLatestProcessName } from '../../transactions/transaction';
 import { storeData } from './CheckoutPageSessionHelpers';
 
@@ -119,6 +119,48 @@ export const getShippingDetailsMaybe = formValues => {
       }
     : {};
 };
+
+/**
+ * Map a member profile shipping address to transaction protectedData.
+ *
+ * @param {Object} address protectedData.shippingAddress
+ * @returns shippingDetails object or empty object
+ */
+export const getShippingDetailsFromProfileAddress = address => {
+  if (!address?.name || !address?.street1) {
+    return {};
+  }
+  return {
+    shippingDetails: {
+      name: address.name,
+      phoneNumber: address.phone,
+      address: {
+        city: address.city,
+        country: address.country || 'US',
+        line1: address.street1,
+        line2: address.streetNo,
+        postalCode: address.zip,
+        state: address.state,
+      },
+    },
+  };
+};
+
+/**
+ * True when the US ship-to / ship-from address has the required fields.
+ *
+ * @param {Object} address
+ * @returns {boolean}
+ */
+export const isCompleteShippingAddress = address =>
+  !!(
+    address?.name &&
+    address?.street1 &&
+    address?.city &&
+    address?.state &&
+    address?.zip &&
+    address?.phone
+  );
 
 /**
  * Check if the default payment method exists for the currentUser
@@ -290,6 +332,16 @@ export const processCheckoutWithPayment = (orderParams, extraPaymentParams) => {
     return spendCreditForExchange(transactionId).then(() => order);
   };
 
+  const fnBuyLabel = order => {
+    const transactionId = order?.id?.uuid;
+    if (!transactionId) {
+      return Promise.resolve(order);
+    }
+    return buyShippingLabel(transactionId)
+      .then(() => order)
+      .catch(() => order);
+  };
+
   ///////////////////////////////////////////////////
   // Step 3: complete order                        //
   // by confirming payment against Marketplace API //
@@ -353,10 +405,9 @@ export const processCheckoutWithPayment = (orderParams, extraPaymentParams) => {
 
   const handlePaymentIntentCreation = composeAsync(
     fnRequestPayment,
-    // fnConfirmCardPayment,
     fnSpendCredit,
     fnConfirmPayment,
-    // fnSavePaymentMethod,
+    fnBuyLabel,
     fnOrderResult
   );
 

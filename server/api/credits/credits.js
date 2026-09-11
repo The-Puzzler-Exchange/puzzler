@@ -155,8 +155,32 @@ const spendCreditForExchange = async (userId, transactionId) => {
   };
 };
 
+/**
+ * Return the credit spent on an exchange. Keyed so cancel retries never credit twice.
+ *
+ * @param {string} userId Marketplace user id
+ * @param {string} transactionId Marketplace transaction id
+ * @returns {Promise<Object>} { returned, balance, alreadyReturned }
+ */
+const returnCreditForExchange = async (userId, transactionId) => {
+  const result = await applyCreditEntry(userId, {
+    entryId: `exchange-refund-${transactionId}`,
+    amount: EXCHANGE_CREDIT_COST,
+    type: 'exchangeRefund',
+    description: 'Puzzle exchange refund',
+    transactionId,
+  });
+
+  return {
+    returned: result.applied,
+    balance: result.balance,
+    alreadyReturned: !!result.alreadyApplied,
+  };
+};
+
 module.exports = {
   fetchCredits,
   awardSignupPromo,
   spendCreditForExchange,
+  returnCreditForExchange,
 };
