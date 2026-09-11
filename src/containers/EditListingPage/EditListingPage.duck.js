@@ -226,9 +226,43 @@ const updateStockOfListingMaybe = (listingId, stockTotals, dispatch) => {
 // NOTE: we want to keep it possible to include stock management field to the first wizard form.
 // this means that there needs to be a sequence of calls:
 // create, set stock, show listing (to get updated currentStock entity)
+// A member can have at most this many listings. Every listing counts, no matter which
+// state it is in: draft, pending approval, published and closed listings are all included.
+const MAX_LISTINGS_PER_USER = 3;
+
+const MAX_LISTINGS_ALERT = `You can have ${MAX_LISTINGS_PER_USER} listings at a time. Delete one of your existing listings before creating a new one.`;
+
+/**
+ * Count the listings that the current user has, in any state.
+ * Only the total is needed, so a single listing is fetched for the pagination meta.
+ *
+ * @param {Object} sdk Marketplace API SDK instance
+ * @returns {Promise<number|null>} the number of listings, or null if it can't be resolved
+ */
+const fetchOwnListingCount = sdk => {
+  return sdk.ownListings
+    .query({ page: 1, perPage: 1 })
+    .then(response => response?.data?.meta?.totalItems ?? null)
+    .catch(e => {
+      log.error(e, 'fetch-own-listing-count-failed');
+      // The listing limit is not enforced when the count can't be resolved, so that a
+      // failing query doesn't block a member who is within the limit.
+      return null;
+    });
+};
+
 export const createListingDraftThunk = createAsyncThunk(
   'EditListingPage/createListingDraft',
-  ({ data, config }, { dispatch, rejectWithValue, extra: sdk }) => {
+  async ({ data, config }, { dispatch, rejectWithValue, extra: sdk }) => {
+    const listingCount = await fetchOwnListingCount(sdk);
+
+    if (listingCount != null && listingCount >= MAX_LISTINGS_PER_USER) {
+      if (typeof window !== 'undefined') {
+        window.alert(MAX_LISTINGS_ALERT);
+      }
+      return rejectWithValue(storableError(new Error(MAX_LISTINGS_ALERT)));
+    }
+
     const { stockUpdate, images, ...rest } = data;
 
     // If images should be saved, create array out of the image UUIDs for the API call
