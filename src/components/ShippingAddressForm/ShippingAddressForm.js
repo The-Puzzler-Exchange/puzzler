@@ -8,7 +8,7 @@ import {
   FieldTextInput,
   FieldSelect,
   FieldPhoneNumberInput,
-  H3,
+  Heading,
   PrimaryButton,
 } from '../../components';
 import * as validators from '../../util/validators';
@@ -59,9 +59,9 @@ const ShippingAddressForm = props => {
         return (
           <Form className={classes} onSubmit={handleSubmit}>
             {showHeading ? (
-              <H3>
+              <Heading as="h3" rootClassName={css.heading}>
                 <FormattedMessage id="ShippingAddressForm.title" />
-              </H3>
+              </Heading>
             ) : null}
 
             <div className={css.formRow}>

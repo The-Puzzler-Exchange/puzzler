@@ -273,6 +273,9 @@
 }
 
 .checkoutStepHeading {
+  composes: p from global;
+  font-weight: var(--fontWeightBold);
+  padding: 0;
   margin: 0;
 }
 
