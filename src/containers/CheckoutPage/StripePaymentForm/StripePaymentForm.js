@@ -639,7 +639,7 @@ class StripePaymentForm extends Component {
             ) : (
               <React.Fragment>
                 <Heading as="h3" rootClassName={css.heading}>
-                  <FormattedMessage id="StripePaymentForm.shippingPaymentHeading" />
+                  <FormattedMessage id="StripePaymentForm.payWithHeading" />
                 </Heading>
                 <OneTimePaymentWithCardElement
                   cardClasses={cardClasses}

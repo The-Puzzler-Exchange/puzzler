@@ -31,6 +31,7 @@ import { updateCurrentUserProfile } from '../../ducks/user.duck';
 import {
   H3,
   H4,
+  Heading,
   NamedLink,
   OrderBreakdown,
   Page,
@@ -762,7 +763,7 @@ export const CheckoutPageWithPayment = props => {
             {showPaymentForm ? (
               <div className={css.shippingCheckout}>
                 <div className={css.checkoutStepNav}>
-                  <H4 as="h2" className={css.checkoutStepHeading}>
+                  <Heading as="h3" rootClassName={css.checkoutStepHeading}>
                     {checkoutStep === STEP_ADDRESS ? (
                       <FormattedMessage id="CheckoutPage.shippingAddressHeading" />
                     ) : checkoutStep === STEP_RATES ? (
@@ -770,7 +771,7 @@ export const CheckoutPageWithPayment = props => {
                     ) : (
                       <FormattedMessage id="CheckoutPage.shippingPaymentHeading" />
                     )}
-                  </H4>
+                  </Heading>
                   {checkoutStep !== STEP_ADDRESS && hasAddress ? (
                     <button
                       type="button"
@@ -788,6 +789,7 @@ export const CheckoutPageWithPayment = props => {
                     initialValues={shippingAddress}
                     inProgress={addressSaveInProgress}
                     onSubmit={handleSaveShippingAddress}
+                    showHeading={false}
                     submitTitle={intl.formatMessage({ id: 'ShippingAddressForm.submit' })}
                   />
                 ) : null}

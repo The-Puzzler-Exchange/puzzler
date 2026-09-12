@@ -12,6 +12,7 @@ import {
   FieldTextInput,
   FieldSelect,
   FieldPhoneNumberInput,
+  Heading,
 } from '../../../../components';
 
 import css from './EditListingDeliveryForm.module.css';
@@ -71,9 +72,9 @@ const EditListingDeliveryForm = props => {
               </p>
             ) : null}
 
-            <h2 className={css.sectionHeading}>
+            <Heading as="h3" rootClassName={css.heading}>
               <FormattedMessage id="EditListingDeliveryForm.shipFromHeading" />
-            </h2>
+            </Heading>
             <p className={css.helper}>
               <FormattedMessage id="EditListingDeliveryForm.shipFromHelper" />
             </p>
@@ -99,7 +100,7 @@ const EditListingDeliveryForm = props => {
             </div>
             <FieldTextInput
               id={`${formId}.street1`}
-              className={css.field}
+              className={classNames(css.field, css.fullField)}
               type="text"
               name="street1"
               label={intl.formatMessage({ id: 'ShippingAddressForm.streetLabel' })}
@@ -108,7 +109,7 @@ const EditListingDeliveryForm = props => {
             />
             <FieldTextInput
               id={`${formId}.streetNo`}
-              className={css.field}
+              className={classNames(css.field, css.fullField)}
               type="text"
               name="streetNo"
               label={intl.formatMessage({ id: 'ShippingAddressForm.aptLabel' })}
@@ -161,9 +162,9 @@ const EditListingDeliveryForm = props => {
               />
             </div>
 
-            <h2 className={css.sectionHeading}>
+            <Heading as="h3" rootClassName={css.heading}>
               <FormattedMessage id="EditListingDeliveryForm.parcelHeading" />
-            </h2>
+            </Heading>
             <p className={css.helper}>
               <FormattedMessage id="EditListingDeliveryForm.parcelHelper" />
             </p>

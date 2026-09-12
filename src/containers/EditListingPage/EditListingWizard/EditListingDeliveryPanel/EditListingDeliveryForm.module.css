@@ -105,16 +105,27 @@
   }
 }
 
-.sectionHeading {
-  margin-top: 24px;
-  margin-bottom: 0;
+.fullField {
+  width: 100%;
+}
+
+.heading {
+  composes: p from global;
+  font-weight: var(--fontWeightBold);
+  padding: 0;
+  margin: 24px 0 0 0;
 
   @media (--viewportMedium) {
     margin-top: 32px;
   }
 }
 
+.heading:first-of-type {
+  margin-top: 0;
+}
+
 .helper {
+  composes: marketplaceTinyFontStyles from global;
   margin-top: 6px;
   margin-bottom: 0;
   color: var(--colorGrey700);
