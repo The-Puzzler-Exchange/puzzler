@@ -37,7 +37,7 @@
       gap: 8px;
       background: rgba(238, 237, 254, 0.92);
       color: #534AB7;
-      font-size: 13px;
+      font-size: 26px;
       font-weight: 600;
       padding: 6px 14px;
       border-radius: 20px;
@@ -194,6 +194,7 @@
           padding: 10px 20px;
           border-radius: 8px;
           font-size: 14px;
+          font-weight: 800;
         }
       }
 

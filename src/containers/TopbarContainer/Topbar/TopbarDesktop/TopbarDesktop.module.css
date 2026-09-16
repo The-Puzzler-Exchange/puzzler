@@ -121,6 +121,61 @@
   position: relative;
 }
 
+/* Signing up and logging in are calls to action, so they are styled as buttons instead
+   of plain links. The topbar aligns its content to the top, so the vertical margin is
+   what centers these against the height of the topbar (16 + 40 + 16 = 72px). */
+.signupLink,
+.loginLink {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+
+  height: 40px;
+  margin: 16px 0 16px 8px;
+  padding: 0 18px;
+
+  border-radius: var(--borderRadiusMedium);
+  transition: var(--transitionStyleButton);
+
+  font-weight: var(--fontWeightSemiBold);
+  font-size: 14px;
+  line-height: 18px;
+  letter-spacing: 0;
+
+  &:hover {
+    text-decoration: none;
+  }
+}
+
+/* Signing up is the primary action: a filled button. */
+.signupLink {
+  background-color: var(--colorPrimaryButton);
+  color: var(--colorWhite);
+
+  &:hover {
+    background-color: var(--colorPrimaryButtonDark);
+    color: var(--colorWhite);
+  }
+}
+
+/* Logging in is the secondary action: an outlined button next to the filled one. */
+.loginLink {
+  background-color: var(--colorWhite);
+  color: var(--colorPrimaryButton);
+  border: 1px solid var(--colorPrimaryButton);
+
+  &:hover {
+    color: var(--colorPrimaryButtonDark);
+    border-color: var(--colorPrimaryButtonDark);
+  }
+}
+
+.authLinkLabel {
+  composes: textSmall from global;
+  display: inline-block;
+  text-decoration: inherit;
+}
+
 .notificationDot {
   /* Dimensions */
   width: 7px;
